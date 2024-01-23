@@ -250,6 +250,9 @@ cmake_dependent_option(MSVC_Z7_OVERRIDE "replacing /Zi and /ZI with /Z7 when usi
 option(onnxruntime_USE_AZURE "Build with azure inferencing support" OFF)
 option(onnxruntime_USE_LOCK_FREE_QUEUE "Build with lock-free task queue for threadpool." OFF)
 
+# FP8 training
+option(onnxruntime_ENABLE_FP8_TRAINING "Enable FP8 training" OFF)
+
 # ENABLE_TRAINING includes all training functionality
 # The following 2 entry points
 # 1. ORTModule
@@ -460,6 +463,10 @@ if (onnxruntime_ENABLE_TRITON)
   if (onnxruntime_BUILD_UNIT_TESTS)
     set(onnxruntime_REQUIRE_PYTHON_EMBED_LIB ON)
   endif()
+endif()
+
+if (onnxruntime_ENABLE_FP8_TRAINING)
+  add_compile_definitions(ENABLE_FP8_TRAINING)
 endif()
 
 # General C# properties

@@ -82,6 +82,9 @@
 #include "orttraining/core/optimizer/triton_fusion.h"
 #include "orttraining/core/framework/triton/triton_op_executor.h"
 #endif  // ENABLE_TRITON
+#ifdef ENABLE_FP8_TRAINING
+#include "orttraining/core/optimizer/fp8_linear_replacement.h"
+#endif  // ENABLE_FP8_TRAINING
 
 #endif  // !defined(ORT_MINIMAL_BUILD)
 
@@ -337,6 +340,10 @@ InlinedVector<std::unique_ptr<GraphTransformer>> GenerateTransformers(
 #ifdef ENABLE_TRAINING
       transformers.emplace_back(std::make_unique<BitmaskDropoutReplacement>(cuda_rocm_eps));
       transformers.emplace_back(std::make_unique<BiasSoftmaxDropoutFusion>(cuda_rocm_eps));
+#ifdef ENABLE_FP8_TRAINING
+      transformers.emplace_back(std::make_unique<Fp8LinearReplacement>(
+          InlinedHashSet<std::string_view>{onnxruntime::kCudaExecutionProvider}));
+#endif  // ENABLE_FP8_TRAINING
       transformers.emplace_back(std::make_unique<SceLossGradBiasFusion>(cpu_cuda_rocm_eps));
 #endif
 

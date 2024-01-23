@@ -78,10 +78,24 @@
       "${ORTTRAINING_SOURCE_DIR}/training_ops/cuda/*.cc"
     )
 
+    if (NOT onnxruntime_ENABLE_FP8_TRAINING)
+      list(REMOVE_ITEM onnxruntime_cuda_training_ops_cc_srcs
+        "${ORTTRAINING_SOURCE_DIR}/training_ops/cuda/fp8/*.cc"
+        "${ORTTRAINING_SOURCE_DIR}/training_ops/cuda/fp8/*.h"
+      )
+    endif()
+
     file(GLOB_RECURSE onnxruntime_cuda_training_ops_cu_srcs CONFIGURE_DEPENDS
       "${ORTTRAINING_SOURCE_DIR}/training_ops/cuda/*.cu"
       "${ORTTRAINING_SOURCE_DIR}/training_ops/cuda/*.cuh"
     )
+
+    if (NOT onnxruntime_ENABLE_FP8_TRAINING)
+      list(REMOVE_ITEM onnxruntime_cuda_training_ops_cu_srcs
+        "${ORTTRAINING_SOURCE_DIR}/training_ops/cuda/fp8/*.cu"
+        "${ORTTRAINING_SOURCE_DIR}/training_ops/cuda/fp8/*.cuh"
+      )
+    endif()
 
     source_group(TREE ${ORTTRAINING_ROOT} FILES ${onnxruntime_cuda_training_ops_cc_srcs} ${onnxruntime_cuda_training_ops_cu_srcs})
     list(APPEND onnxruntime_providers_cuda_src ${onnxruntime_cuda_training_ops_cc_srcs} ${onnxruntime_cuda_training_ops_cu_srcs})
