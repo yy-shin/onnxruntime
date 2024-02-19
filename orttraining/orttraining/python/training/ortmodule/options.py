@@ -297,7 +297,7 @@ class _RuntimeOptions:
         )
 
         # Triton support.
-        self.enable_triton = False
+        self.enable_triton = True
         self.enable_tuning = False
         self.max_tuning_duration_ms = 0
         self.tuning_results_path = ""
@@ -370,20 +370,20 @@ class _RuntimeOptions:
 
         # Configuration for Triton.
         # Enable Triton op executor if Triton is installed, backend has support and environment variable is set.
-        if (
-            "ORTMODULE_USE_TRITON" in os.environ
-            and int(os.getenv("ORTMODULE_USE_TRITON")) == 1
-            and C.is_triton_enabled()
-        ):
-            try:
-                import triton  # noqa: F401
-            except ImportError:
-                pass
-                self._logger.warning(
-                    "triton library missing. Please install triton with `pip install triton`. Triton feature will be off."
-                )
-            else:
-                self.enable_triton = True
+        # if (
+        #     "ORTMODULE_USE_TRITON" in os.environ
+        #     and int(os.getenv("ORTMODULE_USE_TRITON")) == 1
+        #     and C.is_triton_enabled()
+        # ):
+        #     try:
+        #         import triton  # noqa: F401
+        #     except ImportError:
+        #         pass
+        #         self._logger.warning(
+        #             "triton library missing. Please install triton with `pip install triton`. Triton feature will be off."
+        #         )
+        #     else:
+        #         self.enable_triton = True
 
         if "ORTMODULE_ENABLE_TUNING" in os.environ and int(os.getenv("ORTMODULE_ENABLE_TUNING")) == 1:
             self.enable_tuning = True

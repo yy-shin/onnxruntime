@@ -9,6 +9,7 @@ import torch
 
 from ._mm import triton_gemm, triton_gemm_out, triton_matmul, triton_matmul_out  # noqa: F401
 from ._slice_scel import slice_scel, slice_scel_backward  # noqa: F401
+from ._tensor_debug import tensor_debug, transform_tensor_debug  # noqa: F401
 
 _all_kernels = [
     "triton_gemm",
@@ -17,6 +18,7 @@ _all_kernels = [
     "triton_matmul_out",
     "slice_scel",
     "slice_scel_backward",
+    "tensor_debug",
 ]
 
 if (
