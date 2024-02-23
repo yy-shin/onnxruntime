@@ -212,6 +212,7 @@ stages:
                   ln -s /data/models $(Build.BinariesDirectory)/models
                   docker run --rm \
                     --volume /data/onnx:/data/onnx:ro \
+                    --volume /data/models:/data/models:ro \
                     --volume $(Build.SourcesDirectory):/onnxruntime_src \
                     --volume $(Build.BinariesDirectory):/build \
                     --volume $HOME/.onnx:/home/onnxruntimedev/.onnx \
