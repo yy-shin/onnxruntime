@@ -60,8 +60,8 @@ stages:
         parameters:
           Dockerfile: tools/ci_build/github/linux/docker/inference/x64/default/cpu/Dockerfile
           Context: tools/ci_build/github/linux/docker/inference/x64/default/cpu
-          DockerBuildArgs: "--build-arg BUILD_UID=$( id -u ) --build-arg BASEIMAGE=registry.access.redhat.com/ubi8/ubi"
-          Repository: onnxruntimecpubuildcentos8x64
+          DockerBuildArgs: "--build-arg BUILD_UID=$( id -u ) --build-arg BASEIMAGE=registry.access.redhat.com/ubi8/dotnet-80"
+          Repository: onnxruntimecpubuildubi8x64
 
       - template: templates/linux-build-step-with-cache.yml
         parameters:
@@ -85,7 +85,7 @@ stages:
                     -e ALLOW_RELEASED_ONNX_OPSET_ONLY=0 \
                     -e NIGHTLY_BUILD \
                     -e BUILD_BUILDNUMBER \
-                    onnxruntimecpubuildcentos8x64 \
+                    onnxruntimecpubuildubi8x64 \
                     /bin/bash -c "
                       set -ex; \
                       python3.11 /onnxruntime_src/tools/ci_build/build.py \
