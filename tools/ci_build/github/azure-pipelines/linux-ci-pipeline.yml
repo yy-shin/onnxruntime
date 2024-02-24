@@ -209,7 +209,6 @@ stages:
               inputs:
                 script: |
                   mkdir -p $HOME/.onnx
-                  ln -s /data/models $(Build.BinariesDirectory)/models
                   docker run --rm \
                     --volume /data/onnx:/data/onnx:ro \
                     --volume /data/models:/data/models:ro \
