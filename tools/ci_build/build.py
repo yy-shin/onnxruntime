@@ -2869,6 +2869,8 @@ def main():
         if args.build_nodejs and not args.skip_nodejs_tests:
             nodejs_binding_dir = os.path.normpath(os.path.join(source_dir, "js", "node"))
             run_nodejs_tests(nodejs_binding_dir)
+    else:
+        log.info("Tests are skipped.")
 
     # Build packages after running the tests.
     # NOTE: if you have a test that rely on a file which only get copied/generated during packaging step, it could
