@@ -2573,13 +2573,18 @@ def main():
     # If there was no explicit argument saying what to do, default
     # to update, build and test (for native builds).
     if not (args.update or args.clean or args.build or args.test or args.gen_doc):
-        log.debug("Defaulting to running update, build [and test for native builds].")
-        args.update = True
-        args.build = True
         if cross_compiling:
             args.test = args.android_abi == "x86_64" or args.android_abi == "arm64-v8a"
         else:
             args.test = True
+            
+        if args.test:
+            log.debug("Defaulting to running update, build and test for native builds.")
+        else:
+            log.debug("Defaulting to running update, build. Tests will be skipped.")
+ 
+        args.update = True
+        args.build = True
 
     if args.skip_tests:
         args.test = False
@@ -2848,6 +2853,7 @@ def main():
         build_targets(args, cmake_path, build_dir, configs, num_parallel_jobs, args.target)
 
     if args.test:
+        log.debug("start running tests...")
         if args.enable_onnx_tests:
             source_onnx_model_dir = "C:\\local\\models" if is_windows() else "/data/models"
             setup_test_data(source_onnx_model_dir, "models", build_dir, configs)
