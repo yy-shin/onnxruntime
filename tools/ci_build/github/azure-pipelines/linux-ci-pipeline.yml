@@ -54,7 +54,7 @@ stages:
 
       - checkout: self
         clean: true
-        submodules: none
+        submodules: true
 
       - template: templates/get-docker-image-steps.yml
         parameters:
