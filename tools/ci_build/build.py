@@ -2375,8 +2375,7 @@ def build_nuget_package(
         cmd_args = ["msbuild", sln, "/t:restore", "/p:RestoreConfigFile=NuGet.CSharp.config", *extra_options]
 
     # set build directory based on build_dir arg
-    native_dir = os.path.normpath(os.path.join(source_dir, build_dir))
-    ort_build_dir = "/p:OnnxRuntimeBuildDirectory=" + native_dir
+    ort_build_dir = "/p:OnnxRuntimeBuildDirectory=" + build_dir
 
     run_subprocess(cmd_args, cwd=csharp_build_dir)
 
@@ -2443,10 +2442,7 @@ def build_nuget_package(
 
 
 def run_csharp_tests(source_dir, build_dir, use_cuda, use_openvino, use_tensorrt, use_dnnl, enable_training_apis):
-    # Currently only running tests on windows.
-    if not is_windows():
-        return
-    csharp_source_dir = os.path.join(source_dir, "csharp")
+    csharp_source_dir = Path(source_dir) / "csharp"
 
     # define macros based on build args
     macros = ""
@@ -2466,21 +2462,21 @@ def run_csharp_tests(source_dir, build_dir, use_cuda, use_openvino, use_tensorrt
         define_constants = '/p:DefineConstants="' + macros + '"'
 
     # set build directory based on build_dir arg
-    native_build_dir = os.path.normpath(os.path.join(source_dir, build_dir))
-    ort_build_dir = '/p:OnnxRuntimeBuildDirectory="' + native_build_dir + '"'
+    ort_build_dir = '/p:OnnxRuntimeBuildDirectory="' + build_dir + '"'
 
     # Skip pretrained models test. Only run unit tests as part of the build
     # add "--verbosity", "detailed" to this command if required
+    csproj_path = csharp_source_dir / "test" / "Microsoft.ML.OnnxRuntime.Tests.NetCoreApp" / "Microsoft.ML.OnnxRuntime.Tests.NetCoreApp.csproj"
     cmd_args = [
         "dotnet",
         "test",
-        "test\\Microsoft.ML.OnnxRuntime.Tests.NetCoreApp\\Microsoft.ML.OnnxRuntime.Tests.NetCoreApp.csproj",
+        str(csproj_path),
         "--filter",
         "FullyQualifiedName!=Microsoft.ML.OnnxRuntime.Tests.InferenceTest.TestPreTrainedModels",
         define_constants,
         ort_build_dir,
     ]
-    run_subprocess(cmd_args, cwd=csharp_source_dir)
+    run_subprocess(cmd_args, cwd=str(csharp_source_dir))
 
 
 def generate_documentation(source_dir, build_dir, configs, validate):
@@ -2577,7 +2573,10 @@ def main():
             args.test = args.android_abi == "x86_64" or args.android_abi == "arm64-v8a"
         else:
             args.test = True
-            
+
+        if args.skip_tests:
+            args.test = False      
+      
         if args.test:
             log.debug("Defaulting to running update, build and test for native builds.")
         else:
@@ -2667,7 +2666,7 @@ def main():
     # to have cmake/ctest.
     cmake_path = resolve_executable_path(args.cmake_path)
     ctest_path = resolve_executable_path(args.ctest_path)
-    build_dir = args.build_dir
+    build_dir = str(Path(args.build_dir).resolve())
     script_dir = os.path.realpath(os.path.dirname(__file__))
     source_dir = os.path.normpath(os.path.join(script_dir, "..", ".."))
 
