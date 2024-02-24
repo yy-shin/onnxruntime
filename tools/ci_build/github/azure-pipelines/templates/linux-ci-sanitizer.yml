@@ -1,0 +1,86 @@
+parameters:
+- name: cmake_build_type
+  type: string
+  values:
+   - Debug
+   - Release
+   - RelWithDebInfo
+   - MinSizeRel
+
+- name: arch
+  type: string
+
+- name: machine_pool
+  type: string
+
+jobs:
+    - job: Linux_${{parameters.cmake_build_type}}
+      timeoutInMinutes: 180
+      workspace:
+        clean: all
+      variables:
+        skipComponentGovernanceDetection: true
+        ORT_CACHE_DIR: $(Agent.TempDirectory)/ort_ccache
+        TODAY: $[format('{0:dd}{0:MM}{0:yyyy}', pipeline.startTime)]
+      pool: 
+        name: ${{parameters.machine_pool}}
+      steps:
+      - task: mspremier.PostBuildCleanup.PostBuildCleanup-task.PostBuildCleanup@3
+        displayName: 'Clean Agent Directories'
+        condition: always()
+
+      - checkout: self
+        clean: true
+        submodules: true
+
+      - template: get-docker-image-steps.yml
+        parameters:
+          Dockerfile: tools/ci_build/github/linux/docker/inference/${{parameters.arch}}/default/cpu/Dockerfile
+          Context: tools/ci_build/github/linux/docker/inference/${{parameters.arch}}/default/cpu
+          DockerBuildArgs: "--build-arg BUILD_UID=$( id -u ) --build-arg BASEIMAGE=registry.access.redhat.com/ubi8/ubi"
+          Repository: onnxruntimecpubuildcentos8${{parameters.arch}}
+
+      - template: linux-build-step-with-cache.yml
+        parameters:
+          WithCache: false
+          Today: $(TODAY)
+          AdditionalKey: onnxruntime_linux_${{parameters.cmake_build_type}}_with_address_sanitizer
+          CacheDir: $(ORT_CACHE_DIR)
+          ChangeEveryCommit: true
+          BuildStep:
+            - task: CmdLine@2
+              displayName: 'build'
+              inputs:
+                script: |
+                  mkdir -p $HOME/.onnx
+                  docker run --rm \
+                    --volume /data/onnx:/data/onnx:ro \
+                    --volume /data/models:/data/models:ro \
+                    --volume $(Build.SourcesDirectory):/onnxruntime_src \
+                    --volume $(Build.BinariesDirectory):/build \
+                    --volume $HOME/.onnx:/home/onnxruntimedev/.onnx \
+                    -e ALLOW_RELEASED_ONNX_OPSET_ONLY=0 \
+                    -e NIGHTLY_BUILD \
+                    -e BUILD_BUILDNUMBER \
+                    onnxruntimecpubuildcentos8${{parameters.arch}} \
+                    /bin/bash -c "
+                      set -ex; \
+                      python3.11 /onnxruntime_src/tools/ci_build/build.py \
+                        --build_dir /build --cmake_generator 'Ninja' \
+                        --config ${{parameters.cmake_build_type}} \
+                        --skip_submodule_sync \
+                        --build_shared_lib --build_nuget \
+                        --parallel --use_binskim_compliant_compile_flags \
+                        --build_csharp \
+                        --enable_onnx_tests --enable_address_sanitizer"
+                workingDirectory: $(Build.SourcesDirectory)
+
+      - task: PublishTestResults@2
+        displayName: 'Publish unit test results'
+        inputs:
+          testResultsFiles: '**/*.results.xml'
+          searchFolder: '$(Build.BinariesDirectory)'
+          testRunTitle: 'Unit Test Run'
+          buildConfiguration: '${{parameters.cmake_build_type}}'
+          testRunTitle: '${{parameters.arch}}-asan'          
+        condition: succeededOrFailed()
