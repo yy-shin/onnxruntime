@@ -80,7 +80,6 @@ jobs:
         inputs:
           testResultsFiles: '**/*.results.xml'
           searchFolder: '$(Build.BinariesDirectory)'
-          testRunTitle: 'Unit Test Run'
           buildConfiguration: '${{parameters.cmake_build_type}}'
           testRunTitle: '${{parameters.arch}}-asan'          
         condition: succeededOrFailed()
