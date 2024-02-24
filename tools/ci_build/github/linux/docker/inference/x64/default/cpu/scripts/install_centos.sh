@@ -10,4 +10,4 @@ dnf install -y python3.11-devel glibc-langpack-\* glibc-locale-source which redh
 locale
 dotnet --list-sdks
 #For running C# tests
-dotnet workload install android wasm-tools-net6
+dotnet workload install android wasm-tools-net6 ios
