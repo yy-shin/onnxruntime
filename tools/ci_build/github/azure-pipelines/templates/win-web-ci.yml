@@ -26,8 +26,10 @@ parameters:
 
 jobs:
 - job: build_onnxruntime_web
-  pool: ${{ parameters.PoolName }}
-
+  pool: 
+    name: ${{ parameters.PoolName }}
+    demands:
+    - ImageOverride -equals "Onnxruntime-Win2022-Web-A10"
   variables:
     webgpuCommandlineExtraFlags: '--chromium-flags=--ignore-gpu-blocklist --chromium-flags=--gpu-vendor-id=0x10de'
     runCodesignValidationInjection: false
