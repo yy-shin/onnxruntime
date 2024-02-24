@@ -818,6 +818,7 @@ def run_subprocess(
     env=None,
     python_path=None,
     cuda_home=None,
+    enable_asan=False,
 ):
     if env is None:
         env = {}
@@ -845,7 +846,9 @@ def run_subprocess(
             my_env["PYTHONPATH"] += os.pathsep + python_path
         else:
             my_env["PYTHONPATH"] = python_path
-
+    # TODO: do not hardcode the path
+    if enable_asan and is_linux() and os.path.exists("/usr/lib64/libasan.so.8"):
+        my_env["LD_PRELOAD"] = "/usr/lib64/libasan.so.8"
     my_env.update(env)
 
     log.info(" ".join(args))
@@ -2013,7 +2016,7 @@ def run_onnxruntime_tests(args, source_dir, ctest_path, build_dir, configs):
                 run_subprocess([os.path.join(cwd, exe), test_output], cwd=cwd, dll_path=dll_path)
         else:
             ctest_cmd = [ctest_path, "--build-config", config, "--verbose", "--timeout", args.test_all_timeout]
-            run_subprocess(ctest_cmd, cwd=cwd, dll_path=dll_path)
+            run_subprocess(ctest_cmd, cwd=cwd, dll_path=dll_path, enable_asan=args.enable_address_sanitizer)
 
         if args.enable_pybind:
             python_path = None
@@ -2029,15 +2032,27 @@ def run_onnxruntime_tests(args, source_dir, ctest_path, build_dir, configs):
                 cwd = os.path.join(cwd, config)
 
             run_subprocess(
-                [sys.executable, "onnxruntime_test_python.py"], cwd=cwd, dll_path=dll_path, python_path=python_path
+                [sys.executable, "onnxruntime_test_python.py"],
+                cwd=cwd,
+                dll_path=dll_path,
+                python_path=python_path,
+                enable_asan=args.enable_address_sanitizer,
             )
 
             if not args.disable_contrib_ops:
-                run_subprocess([sys.executable, "onnxruntime_test_python_sparse_matmul.py"], cwd=cwd, dll_path=dll_path)
+                run_subprocess(
+                    [sys.executable, "onnxruntime_test_python_sparse_matmul.py"],
+                    cwd=cwd,
+                    dll_path=dll_path,
+                    enable_asan=args.enable_address_sanitizer,
+                )
 
             if args.enable_symbolic_shape_infer_tests:
                 run_subprocess(
-                    [sys.executable, "onnxruntime_test_python_symbolic_shape_infer.py"], cwd=cwd, dll_path=dll_path
+                    [sys.executable, "onnxruntime_test_python_symbolic_shape_infer.py"],
+                    cwd=cwd,
+                    dll_path=dll_path,
+                    enable_asan=args.enable_address_sanitizer,
                 )
 
             # For CUDA or DML enabled builds test IOBinding feature
@@ -2048,18 +2063,36 @@ def run_onnxruntime_tests(args, source_dir, ctest_path, build_dir, configs):
                         [sys.executable, "-m", "pip", "uninstall", "--yes", "onnx"], cwd=cwd, dll_path=dll_path
                     )
                     run_subprocess([sys.executable, "-m", "pip", "install", "-q", "onnx"], cwd=cwd, dll_path=dll_path)
-                run_subprocess([sys.executable, "onnxruntime_test_python_iobinding.py"], cwd=cwd, dll_path=dll_path)
+                run_subprocess(
+                    [sys.executable, "onnxruntime_test_python_iobinding.py"],
+                    cwd=cwd,
+                    dll_path=dll_path,
+                    enable_asan=args.enable_address_sanitizer,
+                )
 
             if args.use_cuda:
                 log.info("Testing CUDA Graph feature")
-                run_subprocess([sys.executable, "onnxruntime_test_python_cudagraph.py"], cwd=cwd, dll_path=dll_path)
+                run_subprocess(
+                    [sys.executable, "onnxruntime_test_python_cudagraph.py"],
+                    cwd=cwd,
+                    dll_path=dll_path,
+                    enable_asan=args.enable_address_sanitizer,
+                )
 
             if not args.disable_ml_ops and not args.use_tensorrt:
-                run_subprocess([sys.executable, "onnxruntime_test_python_mlops.py"], cwd=cwd, dll_path=dll_path)
+                run_subprocess(
+                    [sys.executable, "onnxruntime_test_python_mlops.py"],
+                    cwd=cwd,
+                    dll_path=dll_path,
+                    enable_asan=args.enable_address_sanitizer,
+                )
 
             if args.use_tensorrt:
                 run_subprocess(
-                    [sys.executable, "onnxruntime_test_python_nested_control_flow_op.py"], cwd=cwd, dll_path=dll_path
+                    [sys.executable, "onnxruntime_test_python_nested_control_flow_op.py"],
+                    cwd=cwd,
+                    dll_path=dll_path,
+                    enable_asan=args.enable_address_sanitizer,
                 )
 
             try:
@@ -2082,6 +2115,7 @@ def run_onnxruntime_tests(args, source_dir, ctest_path, build_dir, configs):
                     cwd=cwd,
                     dll_path=dll_path,
                     python_path=python_path,
+                    enable_asan=args.enable_address_sanitizer,
                 )
                 if not args.disable_contrib_ops:
                     run_subprocess(
@@ -2104,7 +2138,10 @@ def run_onnxruntime_tests(args, source_dir, ctest_path, build_dir, configs):
 
                 if not args.disable_ml_ops:
                     run_subprocess(
-                        [sys.executable, "onnxruntime_test_python_backend_mlops.py"], cwd=cwd, dll_path=dll_path
+                        [sys.executable, "onnxruntime_test_python_backend_mlops.py"],
+                        cwd=cwd,
+                        dll_path=dll_path,
+                        enable_asan=args.enable_address_sanitizer,
                     )
 
                 run_subprocess(
@@ -2118,9 +2155,18 @@ def run_onnxruntime_tests(args, source_dir, ctest_path, build_dir, configs):
                 )
 
                 if not args.skip_onnx_tests:
-                    run_subprocess([os.path.join(cwd, "onnx_test_runner"), "test_models"], cwd=cwd)
+                    run_subprocess(
+                        [os.path.join(cwd, "onnx_test_runner"), "test_models"],
+                        cwd=cwd,
+                        enable_asan=args.enable_address_sanitizer,
+                    )
                     if config != "Debug":
-                        run_subprocess([sys.executable, "onnx_backend_test_series.py"], cwd=cwd, dll_path=dll_path)
+                        run_subprocess(
+                            [sys.executable, "onnx_backend_test_series.py"],
+                            cwd=cwd,
+                            dll_path=dll_path,
+                            enable_asan=args.enable_address_sanitizer,
+                        )
 
             if not args.skip_keras_test:
                 try:
@@ -2132,7 +2178,12 @@ def run_onnxruntime_tests(args, source_dir, ctest_path, build_dir, configs):
                     log.warning("onnxmltools and keras are not installed. The keras tests will be skipped.")
                     onnxml_test = False
                 if onnxml_test:
-                    run_subprocess([sys.executable, "onnxruntime_test_python_keras.py"], cwd=cwd, dll_path=dll_path)
+                    run_subprocess(
+                        [sys.executable, "onnxruntime_test_python_keras.py"],
+                        cwd=cwd,
+                        dll_path=dll_path,
+                        enable_asan=args.enable_address_sanitizer,
+                    )
 
 
 def tvm_run_python_tests(build_dir, configs):

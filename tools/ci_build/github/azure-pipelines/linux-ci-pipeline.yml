@@ -88,24 +88,14 @@ stages:
                     onnxruntimecpubuildcentos8x64 \
                     /bin/bash -c "
                       set -ex; \
-                      python3.9 /onnxruntime_src/tools/ci_build/build.py \
+                      python3.11 /onnxruntime_src/tools/ci_build/build.py \
                         --build_dir /build --cmake_generator 'Ninja' \
                         --config Debug \
                         --skip_submodule_sync \
-                        --build_shared_lib \
+                        --build_shared_lib --build_nuget \
                         --parallel --use_binskim_compliant_compile_flags \
                         --build_csharp \
-                        --enable_onnx_tests --enable_address_sanitizer \
-                        --update --build;
-                      LD_PRELOAD=/usr/lib64/libasan.so.6 python3.9 /onnxruntime_src/tools/ci_build/build.py \
-                        --build_dir /build --cmake_generator 'Ninja' \
-                        --config Debug \
-                        --skip_submodule_sync \
-                        --build_shared_lib \
-                        --parallel --use_binskim_compliant_compile_flags \
-                        --build_csharp \
-                        --enable_onnx_tests --enable_address_sanitizer \
-                        --test;"
+                        --enable_onnx_tests --enable_address_sanitizer"
                 workingDirectory: $(Build.SourcesDirectory)
 
       - task: PublishTestResults@2
@@ -211,6 +201,7 @@ stages:
                   mkdir -p $HOME/.onnx
                   docker run --rm \
                     --volume /data/onnx:/data/onnx:ro \
+                    --volume /data/models:/data/models:ro \
                     --volume $(Build.SourcesDirectory):/onnxruntime_src \
                     --volume $(Build.BinariesDirectory):/build \
                     --volume $HOME/.onnx:/home/onnxruntimedev/.onnx \
@@ -233,17 +224,12 @@ stages:
                         --build_csharp \
                         --enable_onnx_tests \
                         --enable_transformers_tool_test \
+                        --enable_symbolic_shape_infer_tests \
                         --use_cache \
-                        --update --build --cmake_extra_defines onnxruntime_BUILD_BENCHMARKS=ON; \
+                        --cmake_extra_defines onnxruntime_BUILD_BENCHMARKS=ON; \
                       ccache -sv; \
                       ccache -z"
                 workingDirectory: $(Build.SourcesDirectory)
-
-      - script: |
-          ln -s /data/models $(Build.BinariesDirectory)/models
-        displayName: link model dir
-
-      
 
       - task: PublishTestResults@2
         displayName: 'Publish unit test results'
