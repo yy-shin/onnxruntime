@@ -9,3 +9,5 @@ rpm -Uvh https://packages.microsoft.com/config/centos/$os_major_version/packages
 dnf install -y python3.11-devel glibc-langpack-\* glibc-locale-source which redhat-lsb-core expat-devel tar unzip zlib-devel make bzip2 bzip2-devel msopenjdk-11 graphviz gcc-toolset-12-binutils gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-libasan-devel dotnet-sdk-8.0 git
 locale
 dotnet --list-sdks
+#For running C# tests
+dotnet workload install android wasm-tools-net6
