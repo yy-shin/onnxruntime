@@ -10,4 +10,6 @@ dnf install -y python3.11-devel glibc-langpack-\* glibc-locale-source which redh
 locale
 dotnet --list-sdks
 #For running C# tests
-dotnet workload install android wasm-tools-net6 ios
+#TODO: "dotnet test /onnxruntime_src/csharp/test/Microsoft.ML.OnnxRuntime.Tests.NetCoreApp/Microsoft.ML.OnnxRuntime.Tests.NetCoreApp.csproj" command reports "The target platform identifier ios was not recognized". But ios workload is not available on Linux
+#TODO: The workload 'android' is out of support and will not receive security updates in the future
+dotnet workload install android wasm-tools-net6

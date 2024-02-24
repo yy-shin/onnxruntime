@@ -2197,11 +2197,11 @@ def tvm_run_python_tests(build_dir, configs):
         )
 
 
-def run_nodejs_tests(nodejs_binding_dir):
+def run_nodejs_tests(nodejs_binding_dir, enable_asan):
     args = ["npm", "test", "--", "--timeout=90000"]
     if is_windows():
         args = ["cmd", "/c", *args]
-    run_subprocess(args, cwd=nodejs_binding_dir)
+    run_subprocess(args, cwd=nodejs_binding_dir, enable_asan=enable_asan)
 
 
 def build_python_wheel(
@@ -2442,6 +2442,9 @@ def build_nuget_package(
 
 
 def run_csharp_tests(source_dir, build_dir, use_cuda, use_openvino, use_tensorrt, use_dnnl, enable_training_apis):
+    # Currently only running tests on windows.
+    if not is_windows():
+        return
     csharp_source_dir = Path(source_dir) / "csharp"
 
     # define macros based on build args
@@ -2466,7 +2469,12 @@ def run_csharp_tests(source_dir, build_dir, use_cuda, use_openvino, use_tensorrt
 
     # Skip pretrained models test. Only run unit tests as part of the build
     # add "--verbosity", "detailed" to this command if required
-    csproj_path = csharp_source_dir / "test" / "Microsoft.ML.OnnxRuntime.Tests.NetCoreApp" / "Microsoft.ML.OnnxRuntime.Tests.NetCoreApp.csproj"
+    csproj_path = (
+        csharp_source_dir
+        / "test"
+        / "Microsoft.ML.OnnxRuntime.Tests.NetCoreApp"
+        / "Microsoft.ML.OnnxRuntime.Tests.NetCoreApp.csproj"
+    )
     cmd_args = [
         "dotnet",
         "test",
@@ -2575,13 +2583,13 @@ def main():
             args.test = True
 
         if args.skip_tests:
-            args.test = False      
-      
+            args.test = False
+
         if args.test:
             log.debug("Defaulting to running update, build and test for native builds.")
         else:
             log.debug("Defaulting to running update, build. Tests will be skipped.")
- 
+
         args.update = True
         args.build = True
 
@@ -2868,7 +2876,7 @@ def main():
         # run node.js binding tests
         if args.build_nodejs and not args.skip_nodejs_tests:
             nodejs_binding_dir = os.path.normpath(os.path.join(source_dir, "js", "node"))
-            run_nodejs_tests(nodejs_binding_dir)
+            run_nodejs_tests(nodejs_binding_dir, args.enable_address_sanitizer)
     else:
         log.info("Tests are skipped.")
 
