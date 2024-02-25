@@ -60,9 +60,9 @@ elif [[ "$CPU_ARCH" = "aarch64" ]]; then
 else
   NODEJS_ARCH=$CPU_ARCH
 fi
-# The EOL for nodejs v18.17.1 LTS is April 2025
-GetFile https://nodejs.org/dist/v18.17.1/node-v18.17.1-linux-${NODEJS_ARCH}.tar.gz /tmp/src/node-v18.17.1-linux-${NODEJS_ARCH}.tar.gz
-tar --strip 1 -xf /tmp/src/node-v18.17.1-linux-${NODEJS_ARCH}.tar.gz -C /usr
+# The EOL for nodejs v20.11.1 LTS is April 2026
+GetFile https://nodejs.org/dist/v20.11.1/node-v20.11.1-linux-${NODEJS_ARCH}.tar.gz /tmp/src/node-v20.11.1-linux-${NODEJS_ARCH}.tar.gz
+tar --strip 1 -xf /tmp/src/node-v20.11.1-linux-${NODEJS_ARCH}.tar.gz -C /usr
 
 cd /
 rm -rf /tmp/src
