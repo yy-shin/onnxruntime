@@ -1468,13 +1468,7 @@ static ProviderLibrary s_library_cuda(LIBRARY_PREFIX ORT_TSTR("onnxruntime_provi
                                       false /* unload - On Linux if we unload the cuda shared provider we crash */
 #endif
 );
-// This lib is only for unittest.
-static ProviderLibrary s_library_cuda_test(LIBRARY_PREFIX ORT_TSTR("onnxruntime_providers_cuda_ut") LIBRARY_EXTENSION
-#ifndef _WIN32
-                                           ,
-                                           false /* unload - On Linux if we unload the cuda shared provider we crash */
-#endif
-);
+
 static ProviderLibrary s_library_cann(LIBRARY_PREFIX ORT_TSTR("onnxruntime_providers_cann") LIBRARY_EXTENSION
 #ifndef _WIN32
                                       ,
@@ -1521,7 +1515,7 @@ void UnloadSharedProviders() {
   s_library_openvino.Unload();
   s_library_tensorrt.Unload();
   s_library_cuda.Unload();
-  s_library_cuda_test.Unload();
+  // s_library_cuda_test.Unload();
   s_library_cann.Unload();
   s_library_rocm.Unload();
   s_library_shared.Unload();
@@ -1773,19 +1767,19 @@ ProviderInfo_CUDA& GetProviderInfo_CUDA() {
   ORT_THROW("CUDA Provider not available, can't get interface for it");
 }
 
-ProviderInfo_CUDA* TryGetProviderInfo_CUDA_Test() try {
-  return reinterpret_cast<ProviderInfo_CUDA*>(s_library_cuda_test.Get().GetInfo());
-} catch (const std::exception& exception) {
-  LOGS_DEFAULT(ERROR) << exception.what();
-  return nullptr;
-}
+//ProviderInfo_CUDA* TryGetProviderInfo_CUDA_Test() try {
+//  return reinterpret_cast<ProviderInfo_CUDA*>(s_library_cuda_test.Get().GetInfo());
+//} catch (const std::exception& exception) {
+//  LOGS_DEFAULT(ERROR) << exception.what();
+//  return nullptr;
+//}
 
-ProviderInfo_CUDA& GetProviderInfo_CUDA_Test() {
-  if (auto* info = TryGetProviderInfo_CUDA_Test())
-    return *info;
-
-  ORT_THROW("CUDA Provider not available, can't get interface for it");
-}
+//ProviderInfo_CUDA& GetProviderInfo_CUDA_Test() {
+//  if (auto* info = TryGetProviderInfo_CUDA_Test())
+//    return *info;
+//
+//  ORT_THROW("CUDA Provider not available, can't get interface for it");
+//}
 
 ProviderInfo_CANN* TryGetProviderInfo_CANN() try {
   return reinterpret_cast<ProviderInfo_CANN*>(s_library_cann.Get().GetInfo());

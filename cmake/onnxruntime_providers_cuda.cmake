@@ -131,7 +131,7 @@
   else()
     onnxruntime_add_shared_library_module(onnxruntime_providers_cuda ${onnxruntime_providers_cuda_src})
   endif()
-  # config_cuda_provider_shared_module can be used to config onnxruntime_providers_cuda_obj, onnxruntime_providers_cuda & onnxruntime_providers_cuda_ut.
+  # config_cuda_provider_shared_module can be used to config onnxruntime_providers_cuda_obj, onnxruntime_providers_cuda.
   # This function guarantees that all 3 targets have the same configurations.
   function(config_cuda_provider_shared_module target)
     if (onnxruntime_REDUCED_OPS_BUILD)
@@ -278,10 +278,12 @@
     if (onnxruntime_ENABLE_ATEN)
       target_compile_definitions(${target} PRIVATE ENABLE_ATEN)
     endif()
-  endfunction()
+  endfunction(config_cuda_provider_shared_module)
+  
   if(onnxruntime_ENABLE_CUDA_EP_INTERNAL_TESTS)
     config_cuda_provider_shared_module(onnxruntime_providers_cuda_obj)
   endif()
+  
   config_cuda_provider_shared_module(onnxruntime_providers_cuda)
 
   install(TARGETS onnxruntime_providers_cuda

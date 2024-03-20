@@ -56,9 +56,9 @@ struct ProviderInfo_CUDA {
 
   // This function is the entry point to CUDA EP's UT cases.
   // All tests ared only called from onnxruntime_test_all.
-  virtual void TestAll() {
-    ORT_NOT_IMPLEMENTED(__FUNCTION__, " is only implements in test code path.");
-  }
+  //virtual void TestAll() {
+  //  ORT_NOT_IMPLEMENTED(__FUNCTION__, " is only implements in test code path.");
+  //}
 
  protected:
   ~ProviderInfo_CUDA() = default;  // Can only be destroyed through a subclass instance

@@ -769,19 +769,6 @@ endif()
 set(all_tests ${onnxruntime_test_common_src} ${onnxruntime_test_ir_src} ${onnxruntime_test_optimizer_src}
         ${onnxruntime_test_framework_src} ${onnxruntime_test_providers_src} ${onnxruntime_test_quantiztion_src})
 
-if (onnxruntime_ENABLE_CUDA_EP_INTERNAL_TESTS)
-  file(GLOB onnxruntime_test_providers_cuda_ut_src CONFIGURE_DEPENDS
-    "${TEST_SRC_DIR}/providers/cuda/test_cases/*"
-  )
-  # onnxruntime_providers_cuda_ut is only for unittests.
-  onnxruntime_add_shared_library_module(onnxruntime_providers_cuda_ut ${onnxruntime_test_providers_cuda_ut_src} $<TARGET_OBJECTS:onnxruntime_providers_cuda_obj>)
-  config_cuda_provider_shared_module(onnxruntime_providers_cuda_ut)
-  onnxruntime_add_include_to_target(onnxruntime_providers_cuda_ut GTest::gtest GTest::gmock)
-  target_include_directories(onnxruntime_providers_cuda_ut PRIVATE ${ONNXRUNTIME_ROOT}/core/mickey)
-  target_link_libraries(onnxruntime_providers_cuda_ut PRIVATE GTest::gtest GTest::gmock ${ONNXRUNTIME_MLAS_LIBS} onnxruntime_common)
-  list(APPEND onnxruntime_test_providers_dependencies onnxruntime_providers_cuda_ut)
-endif()
-
 set(all_dependencies ${onnxruntime_test_providers_dependencies} )
 
 if (onnxruntime_ENABLE_TRAINING)
@@ -842,9 +829,50 @@ if (onnxruntime_USE_TENSORRT)
   # made test name contain the "ep" and "model path" information, so we can easily filter the tests using cuda ep or other ep with *cpu_* or *xxx_*.
   list(APPEND test_all_args "--gtest_filter=-*cpu_*:*cuda_*" )
 endif ()
-if(NOT onnxruntime_ENABLE_CUDA_EP_INTERNAL_TESTS)
-  list(REMOVE_ITEM all_tests ${TEST_SRC_DIR}/providers/cuda/cuda_provider_test.cc)
-endif()
+
+## TODO: Will remove if separate executable approach works
+list(REMOVE_ITEM all_tests ${TEST_SRC_DIR}/providers/cuda/cuda_provider_test.cc)
+
+if(onnxruntime_ENABLE_CUDA_EP_INTERNAL_TESTS)
+
+  file(GLOB onnxruntime_test_providers_cuda_ut_src CONFIGURE_DEPENDS
+    "${TEST_SRC_DIR}/providers/cuda/test_cases/*"
+  )
+  
+  # TODO: Will also remove from the source
+  list(REMOVE_ITEM onnxruntime_test_providers_cuda_ut_src ${TEST_SRC_DIR}/providers/cuda/test_cases/cuda_test_provider.cc)
+
+  # onnxruntime_providers_cuda_ut is only for unittests.
+  #onnxruntime_add_shared_library_module(onnxruntime_providers_cuda_ut ${onnxruntime_test_providers_cuda_ut_src} $<TARGET_OBJECTS:onnxruntime_providers_cuda_obj>)
+  #config_cuda_provider_shared_module(onnxruntime_providers_cuda_ut)
+  #onnxruntime_add_include_to_target(onnxruntime_providers_cuda_ut GTest::gtest GTest::gmock)
+  #target_include_directories(onnxruntime_providers_cuda_ut PRIVATE ${ONNXRUNTIME_ROOT}/core/mickey)
+  #target_link_libraries(onnxruntime_providers_cuda_ut PRIVATE GTest::gtest GTest::gmock ${ONNXRUNTIME_MLAS_LIBS} onnxruntime_common)
+  #list(APPEND onnxruntime_test_providers_dependencies onnxruntime_providers_cuda_ut)
+
+  AddTest(
+    TARGET onnxruntime_test_cuda_ut
+    SOURCES ${onnxruntime_test_providers_cuda_ut_src} ${onnxruntime_unittest_main_src}
+    LIBS
+      ${onnx_test_runner_common_lib} ${onnxruntime_test_providers_libs} ${onnxruntime_test_common_libs}
+      onnx_test_data_proto onnxruntime_providers_cuda_obj
+    DEPENDS ${all_dependencies}
+    TEST_ARGS ${test_all_args}
+  )
+
+  include(cutlass)
+  target_include_directories(onnxruntime_test_cuda_ut PRIVATE ${cutlass_SOURCE_DIR}/include ${cutlass_SOURCE_DIR}/tools/util/include)
+  target_include_directories(onnxruntime_test_cuda_ut PRIVATE ${ONNXRUNTIME_ROOT}/core/mickey)
+
+  if (MSVC)
+    # Cutlass code has an issue with the following:
+    # warning C4100: 'magic': unreferenced formal parameter
+    target_compile_options(onnxruntime_test_cuda_ut PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--compiler-options /wd4100>"
+                  "$<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:/wd4100>")
+  endif()
+
+endif(onnxruntime_ENABLE_CUDA_EP_INTERNAL_TESTS)
+
 AddTest(
   TARGET onnxruntime_test_all
   SOURCES ${all_tests} ${onnxruntime_unittest_main_src}
