@@ -1,4 +1,4 @@
-// Copyright (C) Intel Corporation
+// Copyright (C) 2019-2022 Intel Corporation
 // Licensed under the MIT License
 
 #include <memory>
@@ -24,11 +24,11 @@ BackendFactory::MakeBackend(const ONNX_NAMESPACE::ModelProto& model_proto,
     try {
       concrete_backend_ = std::make_shared<BasicBackend>(model_proto, global_context, subgraph_context);
     } catch (std::string const& msg) {
-      ORT_THROW(msg);
+      throw msg;
     }
     return concrete_backend_;
   } else {
-    ORT_THROW("[OpenVINO-EP] Backend factory error: Unknown backend type: " + type);
+    throw std::string("[OpenVINO-EP] Backend factory error: Unknown backend type: " + type);
   }
 }
 }  // namespace openvino_ep

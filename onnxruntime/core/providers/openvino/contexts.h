@@ -1,4 +1,4 @@
-// Copyright (C) Intel Corporation
+// Copyright (C) 2019-2022 Intel Corporation
 // Licensed under the MIT License
 
 #pragma once
@@ -31,7 +31,6 @@ struct GlobalContext {
   int onnx_opset_version;
   void* context = 0;
   bool use_api_2;
-  std::vector<int> OpenVINO_Version = {};  // Ov Major and OV minor version from OV headers
 };
 
 // Holds context specific to subgraph.
@@ -45,6 +44,7 @@ struct SubGraphContext {
   std::vector<int> input_indexes;
   std::unordered_map<std::string, int> input_names;
   std::unordered_map<std::string, int> output_names;
+  std::string precision;
 };
 
 }  // namespace openvino_ep
