@@ -1094,6 +1094,10 @@ Status QnnBackendManager::ExtractProfilingEventExtended(
   tracelogging_provider_ep_enabled = false;
 #endif
 
+  if (event_data_extended.version != QNN_PROFILE_DATA_VERSION_1) {
+    LOGS(*logger_, ERROR) << "Unexpected profiling event version: " << event_data_extended.version;
+  }
+
   if (!tracelogging_provider_ep_enabled) {
     // QNN issue, the version number not correct, ticket created
     // if (event_data_extended.version == QNN_PROFILE_DATA_VERSION_1) {
