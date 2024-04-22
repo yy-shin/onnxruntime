@@ -264,7 +264,7 @@ void KernelTypeStrResolver::Merge(KernelTypeStrResolver src) {
 Status OpSchemaKernelTypeStrResolver::ResolveKernelTypeStr(
     const Node& node, std::string_view kernel_type_str,
     gsl::span<const ArgTypeAndIndex>& resolved_args) const {
-  std::lock_guard lock{resolver_mutex_};
+  absl::MutexLock lock(&resolver_mutex_);
   ORT_RETURN_IF_ERROR(resolver_.RegisterNodeOpSchema(node));
   ORT_RETURN_IF_ERROR(resolver_.ResolveKernelTypeStr(node, kernel_type_str, resolved_args));
   return Status::OK();

@@ -31,7 +31,7 @@ static std::unique_ptr<std::vector<std::function<void()>>> s_run_on_unload_;
 
 void RunOnUnload(std::function<void()> function) {
   OrtMutex mutex;
-  std::lock_guard<OrtMutex> guard(mutex);
+  absl::MutexLock guard(mutex);
   if (!s_run_on_unload_) {
     s_run_on_unload_ = std::make_unique<std::vector<std::function<void()>>>();
   }
@@ -339,7 +339,7 @@ QNNExecutionProvider::QNNExecutionProvider(const ProviderOptions& provider_optio
 
 QNNExecutionProvider::~QNNExecutionProvider() {
   // clean up thread local context caches
-  std::lock_guard<OrtMutex> lock(context_state_.mutex);
+  absl::MutexLock lock(&context_state_.mutex);
   for (const auto& cache_weak : context_state_.caches_to_update_on_destruction) {
     const auto cache = cache_weak.lock();
     if (!cache) continue;
@@ -835,7 +835,7 @@ QNNExecutionProvider::PerThreadContext& QNNExecutionProvider::GetPerThreadContex
   // get context and update cache
   std::shared_ptr<PerThreadContext> context;
   {
-    std::lock_guard<OrtMutex> lock(context_state_.mutex);
+    absl::MutexLock lock(&context_state_.mutex);
 
     // get or create a context
     if (context_state_.retired_context_pool.empty()) {
@@ -869,7 +869,7 @@ void QNNExecutionProvider::ReleasePerThreadContext() const {
   ORT_ENFORCE(cached_context);
 
   {
-    std::lock_guard<OrtMutex> lock(context_state_.mutex);
+    absl::MutexLock lock(&context_state_.mutex);
     context_state_.active_contexts.erase(cached_context);
     context_state_.retired_context_pool.push_back(cached_context);
   }

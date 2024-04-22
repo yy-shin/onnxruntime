@@ -293,7 +293,7 @@ class OnnxTestCase : public ITestCase {
   std::vector<std::filesystem::path> test_data_dirs_;
 
   std::string GetDatasetDebugInfoString(size_t dataset_id) const override {
-    std::lock_guard<OrtMutex> l(m_);
+    absl::MutexLock l(&m_);
     if (dataset_id < debuginfo_strings_.size()) {
       return debuginfo_strings_[dataset_id];
     }
@@ -488,7 +488,7 @@ void OnnxTestCase::LoadTestData(size_t id, onnxruntime::test::HeapBuffer& b,
   if (st.IsOK()) {  // has an all-in-one input file
     std::ostringstream oss;
     {
-      std::lock_guard<OrtMutex> l(m_);
+      absl::MutexLock l(&m_);
       oss << debuginfo_strings_[id];
     }
     ORT_TRY {
@@ -503,7 +503,7 @@ void OnnxTestCase::LoadTestData(size_t id, onnxruntime::test::HeapBuffer& b,
     }
 
     {
-      std::lock_guard<OrtMutex> l(m_);
+      absl::MutexLock l(&m_);
       debuginfo_strings_[id] = oss.str();
     }
     return;

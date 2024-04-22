@@ -77,7 +77,7 @@ class TuningResultsManager {
   void Clear();
 
  private:
-  mutable OrtMutex lock_;
+  mutable absl::Mutex lock_;
   std::unordered_map<std::string, KernelMap> results_;
 };
 

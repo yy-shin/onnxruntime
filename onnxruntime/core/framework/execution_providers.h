@@ -13,6 +13,7 @@
 #include "core/common/logging/logging.h"
 #ifdef _WIN32
 #include <winmeta.h>
+#include <Windows.h>
 #include <evntrace.h>
 #include "core/platform/tracing.h"
 #include "core/platform/windows/telemetry.h"

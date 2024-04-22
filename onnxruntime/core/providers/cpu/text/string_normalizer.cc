@@ -9,6 +9,7 @@
 
 #ifdef _MSC_VER
 #include <locale.h>
+#include <Windows.h>
 #endif  // _MSC_VER
 
 #include <codecvt>

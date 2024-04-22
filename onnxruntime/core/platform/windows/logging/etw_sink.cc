@@ -65,12 +65,12 @@ EtwRegistrationManager& EtwRegistrationManager::Instance() {
 }
 
 bool EtwRegistrationManager::IsEnabled() const {
-  std::lock_guard<OrtMutex> lock(provider_change_mutex_);
+  absl::MutexLock lock(&provider_change_mutex_);
   return is_enabled_;
 }
 
 UCHAR EtwRegistrationManager::Level() const {
-  std::lock_guard<OrtMutex> lock(provider_change_mutex_);
+  absl::MutexLock lock(&provider_change_mutex_);
   return level_;
 }
 
@@ -94,7 +94,7 @@ Severity EtwRegistrationManager::MapLevelToSeverity() {
 }
 
 ULONGLONG EtwRegistrationManager::Keyword() const {
-  std::lock_guard<OrtMutex> lock(provider_change_mutex_);
+  absl::MutexLock lock(&provider_change_mutex_);
   return keyword_;
 }
 
@@ -103,7 +103,7 @@ HRESULT EtwRegistrationManager::Status() const {
 }
 
 void EtwRegistrationManager::RegisterInternalCallback(const EtwInternalCallback& callback) {
-  std::lock_guard<OrtMutex> lock(callbacks_mutex_);
+  absl::MutexLock lock(&callbacks_mutex_);
   callbacks_.push_back(callback);
 }
 
@@ -117,7 +117,7 @@ void NTAPI EtwRegistrationManager::ORT_TL_EtwEnableCallback(
     _In_opt_ PVOID CallbackContext) {
   auto& manager = EtwRegistrationManager::Instance();
   {
-    std::lock_guard<OrtMutex> lock(manager.provider_change_mutex_);
+    absl::MutexLock lock(&manager.provider_change_mutex_);
     manager.is_enabled_ = (IsEnabled != 0);
     manager.level_ = Level;
     manager.keyword_ = MatchAnyKeyword;
@@ -134,7 +134,7 @@ EtwRegistrationManager::EtwRegistrationManager() {
 
 void EtwRegistrationManager::LazyInitialize() {
   if (!initialized_) {
-    std::lock_guard<OrtMutex> lock(init_mutex_);
+    absl::MutexLock lock(&init_mutex_);
     if (!initialized_) {  // Double-check locking pattern
       initialized_ = true;
       etw_status_ = ::TraceLoggingRegisterEx(etw_provider_handle, ORT_TL_EtwEnableCallback, nullptr);
@@ -148,7 +148,7 @@ void EtwRegistrationManager::LazyInitialize() {
 void EtwRegistrationManager::InvokeCallbacks(LPCGUID SourceId, ULONG IsEnabled, UCHAR Level, ULONGLONG MatchAnyKeyword,
                                              ULONGLONG MatchAllKeyword, PEVENT_FILTER_DESCRIPTOR FilterData,
                                              PVOID CallbackContext) {
-  std::lock_guard<OrtMutex> lock(callbacks_mutex_);
+  absl::MutexLock lock(&callbacks_mutex_);
   for (const auto& callback : callbacks_) {
     callback(SourceId, IsEnabled, Level, MatchAnyKeyword, MatchAllKeyword, FilterData, CallbackContext);
   }

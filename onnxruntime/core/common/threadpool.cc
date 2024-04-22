@@ -15,11 +15,14 @@ limitations under the License.
 
 #include <memory>
 #include <optional>
-
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 #include "core/platform/threadpool.h"
 #include "core/common/common.h"
 #include "core/common/cpuid_info.h"
 #include "core/common/eigen_common_wrapper.h"
+
 #include "core/platform/EigenNonBlockingThreadPool.h"
 #include "core/platform/ort_mutex.h"
 #if !defined(ORT_MINIMAL_BUILD)

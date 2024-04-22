@@ -460,7 +460,7 @@ class RunQueue {
 #ifdef USE_LOCK_FREE_QUEUE
     std::lock_guard<OrtSpinLock> mtx(spin_lock_);
 #else
-    std::lock_guard<OrtMutex> lock(mutex_);
+    absl::MutexLock lock(&mutex_);
 #endif
     unsigned back = back_.load(std::memory_order_relaxed);
     Elem& e = array_[(back - 1) & kMask];
@@ -484,7 +484,7 @@ class RunQueue {
 #ifdef USE_LOCK_FREE_QUEUE
     std::lock_guard<OrtSpinLock> mtx(spin_lock_);
 #else
-    std::lock_guard<OrtMutex> lock(mutex_);
+    absl::MutexLock lock(&mutex_);
 #endif
     unsigned back = back_.load(std::memory_order_relaxed);
     w_idx = (back - 1) & kMask;
@@ -509,7 +509,7 @@ class RunQueue {
 #ifdef USE_LOCK_FREE_QUEUE
     std::lock_guard<OrtSpinLock> mtx(spin_lock_);
 #else
-    std::lock_guard<OrtMutex> lock(mutex_);
+    absl::MutexLock lock(&mutex_);
 #endif
     unsigned back;
     Elem* e;
@@ -555,7 +555,7 @@ class RunQueue {
 #ifdef USE_LOCK_FREE_QUEUE
     std::lock_guard<OrtSpinLock> mtx(spin_lock_);
 #else
-    std::lock_guard<OrtMutex> lock(mutex_);
+    absl::MutexLock lock(&mutex_);
 #endif
     Elem& e = array_[w_idx];
     ElemState s = e.state.load(std::memory_order_relaxed);
@@ -1440,17 +1440,22 @@ class ThreadPoolTempl : public onnxruntime::concurrency::ExtendedThreadPoolInter
       ThreadStatus seen = GetStatus();
       if (seen == ThreadStatus::Blocking ||
           seen == ThreadStatus::Blocked) {
-        std::unique_lock<OrtMutex> lk(mutex);
-        // Blocking state exists only transiently during the SetBlock() method
-        // while holding the lock.  We may observe it at the start of this
-        // function, but after acquiring the lock then the target thread
-        // will either be blocked or not.
-        seen = status.load(std::memory_order_relaxed);
-        assert(seen != ThreadStatus::Blocking);
-        if (seen == ThreadStatus::Blocked) {
-          status.store(ThreadStatus::Waking, std::memory_order_relaxed);
-          lk.unlock();
-          cv.notify_one();
+        bool sig = false;
+        {
+          absl::MutexLock lk(&mutex);
+          // Blocking state exists only transiently during the SetBlock() method
+          // while holding the lock.  We may observe it at the start of this
+          // function, but after acquiring the lock then the target thread
+          // will either be blocked or not.
+          seen = status.load(std::memory_order_relaxed);
+          assert(seen != ThreadStatus::Blocking);
+          if (seen == ThreadStatus::Blocked) {
+            status.store(ThreadStatus::Waking, std::memory_order_relaxed);
+            sig = true;
+          }
+        }
+        if (sig) {
+          cv.Signal();
         }
       }
     }
@@ -1470,17 +1475,18 @@ class ThreadPoolTempl : public onnxruntime::concurrency::ExtendedThreadPoolInter
 
     void SetBlocked(std::function<bool()> should_block,
                     std::function<void()> post_block) {
-      std::unique_lock<OrtMutex> lk(mutex);
+      mutex.Lock();
       assert(GetStatus() == ThreadStatus::Spinning);
       status.store(ThreadStatus::Blocking, std::memory_order_relaxed);
       if (should_block()) {
         status.store(ThreadStatus::Blocked, std::memory_order_relaxed);
         do {
-          cv.wait(lk);
+          cv.Wait(&mutex);
         } while (status.load(std::memory_order_relaxed) == ThreadStatus::Blocked);
         post_block();
       }
       status.store(ThreadStatus::Spinning, std::memory_order_relaxed);
+      mutex.Unlock();
     }
 
    private:

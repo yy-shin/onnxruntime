@@ -51,7 +51,7 @@ void* HIPExternalAllocator::Alloc(size_t size) {
 
 void HIPExternalAllocator::Free(void* p) {
   free_(p);
-  std::lock_guard<OrtMutex> lock(lock_);
+  absl::MutexLock lock(&lock_);
   auto it = reserved_.find(p);
   if (it != reserved_.end()) {
     reserved_.erase(it);
@@ -62,7 +62,7 @@ void HIPExternalAllocator::Free(void* p) {
 void* HIPExternalAllocator::Reserve(size_t size) {
   void* p = Alloc(size);
   if (!p) return nullptr;
-  std::lock_guard<OrtMutex> lock(lock_);
+  absl::MutexLock lock(&lock_);
   ORT_ENFORCE(reserved_.find(p) == reserved_.end());
   reserved_.insert(p);
   return p;

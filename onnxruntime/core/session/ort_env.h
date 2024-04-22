@@ -67,7 +67,7 @@ struct OrtEnv {
 
  private:
   static std::unique_ptr<OrtEnv> p_instance_;
-  static onnxruntime::OrtMutex m_;
+  static absl::Mutex m_;
   static int ref_count_;
 
   std::unique_ptr<onnxruntime::Environment> value_;

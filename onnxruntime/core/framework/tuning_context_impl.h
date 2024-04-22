@@ -38,7 +38,7 @@ Status ITuningContext::LoadTuningResults(const TuningResults& tr) {
 }
 
 KernelMap TuningResultsManager::Lookup(const std::string& op_signature) const {
-  std::scoped_lock l{lock_};
+  absl::MutexLock l(&lock_);
   auto it = results_.find(op_signature);
   if (it == results_.cend()) {
     return {};
@@ -48,7 +48,7 @@ KernelMap TuningResultsManager::Lookup(const std::string& op_signature) const {
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 int TuningResultsManager::Lookup(const std::string& op_signature, const std::string& params_signature) const {
-  std::scoped_lock l{lock_};
+  absl::MutexLock l(&lock_);
   auto kernel_map_it = results_.find(op_signature);
   if (kernel_map_it == results_.cend()) {
     return -1;
@@ -81,7 +81,7 @@ inline void AddImpl(const std::string& op_signature,
 }
 
 void TuningResultsManager::Add(const std::string& op_signature, const std::string& params_signature, int best_id) {
-  std::scoped_lock l{lock_};
+  absl::MutexLock l(&lock_);
 
   auto it = results_.find(op_signature);
   if (it == results_.end()) {
@@ -93,7 +93,7 @@ void TuningResultsManager::Add(const std::string& op_signature, const std::strin
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void TuningResultsManager::Delete(const std::string& op_signature, const std::string& params_signature) {
-  std::scoped_lock l{lock_};
+  absl::MutexLock l(&lock_);
 
   auto it = results_.find(op_signature);
   if (it == results_.end()) {
@@ -110,7 +110,7 @@ void TuningResultsManager::Delete(const std::string& op_signature, const std::st
 }
 
 std::unordered_map<std::string, KernelMap> TuningResultsManager::Dump() const {
-  std::scoped_lock l{lock_};
+  absl::MutexLock l(&lock_);
   return results_;
 }
 
@@ -133,14 +133,14 @@ void DisjointMergeImpl(
 }
 
 void TuningResultsManager::Load(const std::unordered_map<std::string, KernelMap>& results_to_load) {
-  std::scoped_lock l{lock_};
+  absl::MutexLock l(&lock_);
   for (const auto& [op_signature, kernel_map] : results_to_load) {
     DisjointMergeImpl(op_signature, kernel_map, results_);
   }
 }
 
 void TuningResultsManager::DisjointMerge(const std::string& op_signature, const KernelMap& kernel_map) {
-  std::scoped_lock l{lock_};
+  absl::MutexLock l(&lock_);
   DisjointMergeImpl(op_signature, kernel_map, results_);
 }
 

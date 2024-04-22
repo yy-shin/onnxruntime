@@ -28,6 +28,7 @@
 #include "core/optimizer/graph_transformer_mgr.h"
 #include "core/optimizer/insert_cast_transformer.h"
 #include "core/platform/ort_mutex.h"
+#include "core/platform/Barrier.h"
 #ifdef ENABLE_LANGUAGE_INTEROP_OPS
 #include "core/language_interop_ops/language_interop_ops.h"
 #endif
@@ -46,7 +47,6 @@ class Environment;
 class GraphTransformer;
 class IExecutionProvider;
 class IOBinding;
-struct Notification;
 
 #ifdef ENABLE_TRAINING
 struct PartialGraphExecutionState;

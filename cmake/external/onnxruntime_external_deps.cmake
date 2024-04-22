@@ -80,14 +80,6 @@ if (onnxruntime_BUILD_BENCHMARKS)
   )
 endif()
 
-if (NOT WIN32)
-    FetchContent_Declare(
-    google_nsync
-    URL ${DEP_URL_google_nsync}
-    URL_HASH SHA1=${DEP_SHA1_google_nsync}
-    FIND_PACKAGE_ARGS NAMES nsync
-    )
-endif()
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external)
 
 FetchContent_Declare(
@@ -338,16 +330,6 @@ endif()
 
 if (onnxruntime_BUILD_BENCHMARKS)
   onnxruntime_fetchcontent_makeavailable(google_benchmark)
-endif()
-
-if (NOT WIN32)
-  #nsync tests failed on Mac Build
-  set(NSYNC_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
-  onnxruntime_fetchcontent_makeavailable(google_nsync)
-  if (google_nsync_SOURCE_DIR)
-    add_library(nsync::nsync_cpp ALIAS nsync_cpp)
-    target_include_directories(nsync_cpp PUBLIC ${google_nsync_SOURCE_DIR}/public)
-  endif()
 endif()
 
 if(onnxruntime_USE_CUDA)

@@ -273,7 +273,7 @@ ROCMExecutionProvider::ROCMExecutionProvider(const ROCMExecutionProviderInfo& in
 ROCMExecutionProvider::~ROCMExecutionProvider() {
   // clean up thread local context caches
   {
-    std::lock_guard<OrtMutex> lock(context_state_.mutex);
+    absl::MutexLock lock(&context_state_.mutex);
     for (const auto& cache_weak : context_state_.caches_to_update_on_destruction) {
       const auto cache = cache_weak.lock();
       if (!cache) continue;
@@ -308,7 +308,7 @@ ROCMExecutionProvider::PerThreadContext& ROCMExecutionProvider::GetPerThreadCont
   // get context and update cache
   std::shared_ptr<PerThreadContext> context;
   {
-    std::lock_guard<OrtMutex> lock(context_state_.mutex);
+    absl::MutexLock lock(&context_state_.mutex);
 
     // get or create a context
     if (context_state_.retired_context_pool.empty()) {
@@ -341,7 +341,7 @@ void ROCMExecutionProvider::ReleasePerThreadContext() const {
   ORT_ENFORCE(cached_context);
 
   {
-    std::lock_guard<OrtMutex> lock(context_state_.mutex);
+    absl::MutexLock lock(&context_state_.mutex);
     context_state_.active_contexts.erase(cached_context);
     context_state_.retired_context_pool.push_back(cached_context);
   }

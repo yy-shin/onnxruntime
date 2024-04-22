@@ -1324,7 +1324,7 @@ Status MIGraphXExecutionProvider::Compile(const std::vector<FusedNodeAndGraph>& 
 
       {
         // lock to avoid race condition
-        std::lock_guard<OrtMutex> lock(*(mgx_state->mgx_mu_ptr));
+        absl::MutexLock lock(mgx_state->mgx_mu_ptr);
 
 #ifdef MIGRAPHX_STREAM_SYNC
         void* rocm_stream;

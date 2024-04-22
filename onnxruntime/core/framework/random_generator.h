@@ -57,7 +57,7 @@ class PhiloxGenerator {
    * Resets the seed and offset.
    */
   void SetSeed(uint64_t seed) {
-    std::lock_guard<OrtMutex> lock(mutex_);
+    absl::MutexLock lock(&mutex_);
     seed_ = seed;
     offset_ = 0;
   }
@@ -66,7 +66,7 @@ class PhiloxGenerator {
    * Gets the seed and offset pair, incrementing the offset by the specified count.
    */
   std::pair<uint64_t, uint64_t> NextPhiloxSeeds(uint64_t count) {
-    std::lock_guard<OrtMutex> lock(mutex_);
+    absl::MutexLock lock(&mutex_);
     auto seeds = std::make_pair(seed_, offset_);
     offset_ += count;
     return seeds;
