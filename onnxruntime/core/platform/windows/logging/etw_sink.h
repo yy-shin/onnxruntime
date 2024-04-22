@@ -91,9 +91,9 @@ class EtwRegistrationManager {
       _In_opt_ PVOID CallbackContext);
 
   std::vector<EtwInternalCallback> callbacks_;
-  OrtMutex callbacks_mutex_;
-  mutable OrtMutex provider_change_mutex_;
-  OrtMutex init_mutex_;
+  absl::Mutex callbacks_mutex_;
+  mutable absl::Mutex provider_change_mutex_;
+  absl::Mutex init_mutex_;
   bool initialized_ = false;
   bool is_enabled_;
   UCHAR level_;

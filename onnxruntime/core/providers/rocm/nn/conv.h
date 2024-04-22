@@ -158,7 +158,7 @@ struct MiopenConvState {
   TensorShapeVector slice_axes;
 
   // note that conv objects are shared between execution frames, and a lock is needed to avoid multi-thread racing
-  OrtMutex mutex;
+  absl::Mutex mutex;
   IAllocatorUniquePtr<void> memory_for_miopen_conv_results;
 
   ~MiopenConvState() {

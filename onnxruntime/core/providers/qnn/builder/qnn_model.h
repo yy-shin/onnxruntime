@@ -141,7 +141,7 @@ class QnnModel {
   QnnBackendType qnn_backend_type_ = QnnBackendType::CPU;
 
   // Mutex acquired during graph execution to support multi-threaded inference of a single session.
-  OrtMutex graph_exec_mutex_;
+  absl::Mutex graph_exec_mutex_;
 };
 
 }  // namespace qnn

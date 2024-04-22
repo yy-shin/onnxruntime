@@ -37,7 +37,7 @@ class Model {
   bool IsScalarOutput(const std::string& output_name) const;
 
   // Mutex for exclusive lock to this model object.
-  OrtMutex& GetMutex() { return mutex_; }
+  absl::Mutex& GetMutex() { return mutex_; }
 
   // Input and output names in the onnx model's order.
   const std::vector<std::string>& GetInputs() const { return inputs_; }
@@ -75,7 +75,7 @@ class Model {
   InlinedHashMap<std::string, size_t> input_map_;
   InlinedHashMap<std::string, size_t> output_map_;
 
-  OrtMutex mutex_;
+  absl::Mutex mutex_;
 
   Model(const emscripten::val& context, const emscripten::val& path, const logging::Logger& logger);
 

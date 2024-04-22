@@ -44,7 +44,7 @@ class Context {
 
   // map from thread's id to its human-readable tag.
   std::unordered_map<std::thread::id, std::string> thread_tag_;
-  OrtMutex mtx_;
+  absl::Mutex mtx_;
 };
 
 }  // namespace profile

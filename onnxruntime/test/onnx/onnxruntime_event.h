@@ -6,7 +6,7 @@
 
 struct OnnxRuntimeEvent {
  public:
-  onnxruntime::OrtMutex finish_event_mutex;
+  absl::Mutex finish_event_mutex;
   onnxruntime::OrtCondVar finish_event_data;
   bool finished = false;
   OnnxRuntimeEvent() = default;

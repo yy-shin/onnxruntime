@@ -261,7 +261,7 @@ class MemPatternPlanner {
   std::list<int> blocks_;
   SafeInt<size_t> buffer_size_{0};
   bool using_counters_;
-  mutable OrtMutex lock_;
+  mutable absl::Mutex lock_;
 };
 
 }  // namespace onnxruntime

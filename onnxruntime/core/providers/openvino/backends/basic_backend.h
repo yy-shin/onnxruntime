@@ -89,13 +89,13 @@ class InferRequestsQueue {
   }
 
   void putIdleRequest(OVInferRequestPtr infer_request) {
-    std::unique_lock<std::mutex> lock(_mutex);
+    absl::MutexLock lock(&_mutex);
     infer_requests_.push_back(infer_request);
     _cv.notify_one();
   }
 
   OVInferRequestPtr getIdleRequest() {
-    std::unique_lock<std::mutex> lock(_mutex);
+    absl::MutexLock lock(&_mutex);
     _cv.wait(lock, [this] { return infer_requests_.size() > 0; });
     auto request = infer_requests_.at(0);
     infer_requests_.erase(infer_requests_.begin());

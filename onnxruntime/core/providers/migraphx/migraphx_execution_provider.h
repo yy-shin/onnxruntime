@@ -38,7 +38,7 @@ struct MIGraphXFuncState {
   migraphx::onnx_options options;
   migraphx::target t{};
   std::unordered_map<std::string, std::size_t> input_name_indexes;
-  OrtMutex* mgx_mu_ptr = nullptr;
+  absl::Mutex* mgx_mu_ptr = nullptr;
   bool no_input_shape = false;
   bool fp16_enable = false;
   bool int8_enable = false;
@@ -87,7 +87,7 @@ class MIGraphXExecutionProvider : public IExecutionProvider {
   bool dump_model_ops_ = false;
   int device_id_;
   migraphx::target t_;
-  OrtMutex mgx_mu_;
+  absl::Mutex mgx_mu_;
   hipStream_t stream_ = nullptr;
 
   std::unordered_map<std::string, migraphx::program> map_progs_;

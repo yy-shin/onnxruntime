@@ -288,7 +288,7 @@ class OnnxTestCase : public ITestCase {
  private:
   std::string test_case_name_;
   mutable std::vector<std::string> debuginfo_strings_;
-  mutable onnxruntime::OrtMutex m_;
+  mutable absl::Mutex m_;
 
   std::vector<std::filesystem::path> test_data_dirs_;
 

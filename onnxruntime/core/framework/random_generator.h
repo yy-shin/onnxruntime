@@ -79,7 +79,7 @@ class PhiloxGenerator {
   static PhiloxGenerator& Default();
 
  private:
-  OrtMutex mutex_;
+  absl::Mutex mutex_;
   uint64_t seed_;
   uint64_t offset_;
 };

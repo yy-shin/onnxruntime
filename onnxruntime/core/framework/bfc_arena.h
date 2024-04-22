@@ -489,7 +489,7 @@ class BFCArena : public IAllocator {
 
   std::unique_ptr<IAllocator> device_allocator_;
 
-  mutable OrtMutex lock_;
+  mutable absl::Mutex lock_;
 
   RegionManager region_manager_;
   std::vector<Chunk> chunks_;

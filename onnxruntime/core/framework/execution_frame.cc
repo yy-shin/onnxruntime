@@ -617,7 +617,7 @@ Status ExecutionFrame::AllocateMLValueTensorSelfOwnBufferHelper(OrtValue& ort_va
     // This code block is not thread-safe.
     // Dynamic activation size would be accessed by multiple threads
     // if parallel executor is used.
-    std::unique_lock<std::mutex> lock(mtx_);
+    absl::MutexLock lock(&mtx_);
     dynamic_activation_memory_sizes_in_byte_[location.ToString()] += size;
     session_state_.GetMemoryProfiler()->GetMemoryInfo().SetDynamicAllocation(ort_value_index);
 #endif

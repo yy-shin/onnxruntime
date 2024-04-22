@@ -129,7 +129,7 @@ class OpSchemaKernelTypeStrResolver final : public IKernelTypeStrResolver {
   // used as a cache when resolving
   // since the cache may be modified with a const instance, ensure that access to the cache is thread-safe
   mutable KernelTypeStrResolver resolver_;
-  mutable OrtMutex resolver_mutex_;
+  mutable absl::Mutex resolver_mutex_;
 };
 
 #endif  // !defined(ORT_MINIMAL_BUILD)

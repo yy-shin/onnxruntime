@@ -207,7 +207,7 @@ common::Status CoreMLExecutionProvider::Compile(const std::vector<FusedNodeAndGr
       // performed, to block other threads to perform Predict on the same model
       // TODO, investigate concurrent runs for different executions from the same model
       {
-        std::unique_lock<OrtMutex> lock(model->GetMutex());
+        absl::MutexLock lock(&model->GetMutex());
         std::unordered_map<std::string, coreml::OnnxTensorInfo> outputs;
         outputs.reserve(model_outputs.size());
 

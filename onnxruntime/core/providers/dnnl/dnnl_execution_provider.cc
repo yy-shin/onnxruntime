@@ -356,7 +356,7 @@ Status DnnlExecutionProvider::Compile(const std::vector<FusedNodeAndGraph>& fuse
 
       // lock each subgraph_primitive as multiple threads have shared memories
       {
-        std::unique_lock<OrtMutex> lock(subgraph_primitive->GetMutex());
+        absl::MutexLock lock(&subgraph_primitive->GetMutex());
         subgraph_primitive->Compile(inputs);
         std::unordered_map<std::string, ort_dnnl::OnnxTensorData> outputs;
         outputs.reserve(subgraph_num_outputs);

@@ -196,7 +196,7 @@ class ROCMExecutionProvider : public IExecutionProvider {
     std::set<std::weak_ptr<PerThreadContextMap>, std::owner_less<std::weak_ptr<PerThreadContextMap>>>
         caches_to_update_on_destruction;
     // synchronizes access to PerThreadContextState members
-    OrtMutex mutex;
+    absl::Mutex mutex;
   };
 
   // The execution provider maintains the PerThreadContexts in this structure.

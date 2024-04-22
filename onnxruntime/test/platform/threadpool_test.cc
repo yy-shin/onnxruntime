@@ -27,7 +27,7 @@ struct TestData {
   explicit TestData(int num) : data(num, 0) {
   }
   std::vector<int> data;
-  onnxruntime::OrtMutex mutex;
+  absl::Mutex mutex;
 };
 
 // This unittest tests ThreadPool function by counting the number of calls to function with each index.

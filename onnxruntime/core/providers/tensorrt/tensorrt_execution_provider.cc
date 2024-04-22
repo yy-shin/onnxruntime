@@ -390,10 +390,9 @@ TensorrtLogger& GetTensorrtLogger(bool verbose_log) {
   }
   return trt_logger;
 }
-
-std::unique_lock<OrtMutex> TensorrtExecutionProvider::GetApiLock() const {
-  static OrtMutex singleton;
-  return std::unique_lock<OrtMutex>(singleton);
+static OrtMutex singleton;
+OrtMutex& TensorrtExecutionProvider::GetApiLock() const {
+  return singleton;
 }
 
 /*
@@ -1601,7 +1600,7 @@ TensorrtExecutionProvider::TensorrtExecutionProvider(const TensorrtExecutionProv
   }
 
   {
-    auto lock = GetApiLock();
+    absl::MutexLock lock (&GetApiLock())();
     runtime_ = std::unique_ptr<nvinfer1::IRuntime>(nvinfer1::createInferRuntime(GetTensorrtLogger(detailed_build_log_)));
   }
 
@@ -1742,7 +1741,7 @@ Status TensorrtExecutionProvider::OnRunEnd(bool sync_stream, const onnxruntime::
 nvinfer1::IBuilder* TensorrtExecutionProvider::GetBuilder(TensorrtLogger& trt_logger) const {
   if (!builder_) {
     {
-      auto lock = GetApiLock();
+      absl::MutexLock lock (&GetApiLock())();
       builder_ = std::unique_ptr<nvinfer1::IBuilder>(nvinfer1::createInferBuilder(trt_logger));
     }
   }
@@ -2823,7 +2822,7 @@ Status TensorrtExecutionProvider::CreateNodeComputeInfoFromGraph(const GraphView
     }
     {
       // ifstream file check, engine serialization/deserialization and engine build are in critical section. It needs lock protection to prevent race condition when inferencing with multithreading.
-      auto lock = GetApiLock();
+      absl::MutexLock lock (&GetApiLock())();
 
       // If explicit profile flag is on and engine cache enable flag is on,
       // we need to compare explicit profiles and profiles used to build the engine in order to decide whether to rebuild the engine.
@@ -3297,7 +3296,7 @@ Status TensorrtExecutionProvider::CreateNodeComputeInfoFromGraph(const GraphView
       // Build engine
       std::unique_ptr<nvinfer1::IHostMemory> serialized_engine;
       {
-        auto lock = GetApiLock();
+        absl::MutexLock lock(&GetApiLock());
         std::chrono::steady_clock::time_point engine_build_start;
         if (detailed_build_log_) {
           engine_build_start = std::chrono::steady_clock::now();

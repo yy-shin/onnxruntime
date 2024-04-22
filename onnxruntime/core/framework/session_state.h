@@ -485,7 +485,7 @@ class SessionState {
   bool enable_mem_pattern_;
 
   // lock for the mem_patterns_
-  mutable OrtMutex mem_patterns_lock_;
+  mutable absl::Mutex mem_patterns_lock_;
   // cache for the generated mem_patterns. key is calculated based on input shapes.
   // must be a node based container as a pointer is cached.
   mutable NodeHashMap<int64_t, MemoryPatternGroup> mem_patterns_;
@@ -557,7 +557,7 @@ class SessionState {
   std::unique_ptr<IStreamCommandHandleRegistry> stream_handles_registry_;
 
   // lock for the device stream pool
-  mutable OrtMutex device_stream_pool_mutex_;
+  mutable absl::Mutex device_stream_pool_mutex_;
   mutable std::vector<std::unique_ptr<DeviceStreamCollection>> device_stream_pool_;
   // flag to indicate whether current session using any EP that create device stream dynamically.
   bool has_device_stream_enabled_ep_ = false;

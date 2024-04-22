@@ -98,7 +98,7 @@ class Model {
   void SetDynamicOutputBufferSize(size_t size) { dynamic_output_buffer_size_ = size; }
 
   // Mutex for exclusive lock to this model object
-  OrtMutex& GetMutex() { return mutex_; }
+  absl::Mutex& GetMutex() { return mutex_; }
 
   // If the given output is a scalar output
   // Since NNAPI does not support tensor with empty shape (scalar), we use {1} tensor for scalar in NNAPI
@@ -130,7 +130,7 @@ class Model {
   // This is map is to lookup the nnapi output from the onnx output
   std::unordered_map<std::string, std::string> onnx_to_nnapi_output_map_;
 
-  OrtMutex mutex_;
+  absl::Mutex mutex_;
 
   void AddInput(const std::string& name, const android::nn::wrapper::OperandType& operand_type);
 

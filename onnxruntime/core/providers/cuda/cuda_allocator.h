@@ -42,7 +42,7 @@ class CUDAExternalAllocator : public CUDAAllocator {
   void* Reserve(size_t size) override;
 
  private:
-  mutable OrtMutex lock_;
+  mutable absl::Mutex lock_;
   ExternalAlloc alloc_;
   ExternalFree free_;
   ExternalEmptyCache empty_cache_;

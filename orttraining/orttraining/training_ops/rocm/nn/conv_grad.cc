@@ -96,11 +96,11 @@ struct ConvParamsEqual {
 
 template <typename T_Perf>
 struct AlgoPerfCache {
-  mutable OrtMutex mutex;
+  mutable absl::Mutex mutex;
   std::unordered_map<ConvParams, T_Perf, ConvParamsHash, ConvParamsEqual> map;
 
   bool Find(const ConvParams& params, T_Perf* result) {
-    std::lock_guard<OrtMutex> guard(mutex);
+    absl::MutexLock guard(&mutex);
     auto it = map.find(params);
     if (it == map.end()) {
       return false;
@@ -110,7 +110,7 @@ struct AlgoPerfCache {
   }
 
   void Insert(const ConvParams& params, const T_Perf& algo_perf) {
-    std::lock_guard<OrtMutex> guard(mutex);
+    absl::MutexLock guard(&mutex);
     map[params] = algo_perf;
   }
 };

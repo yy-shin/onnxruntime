@@ -166,7 +166,7 @@ struct CudnnConvState {
   TensorShapeVector slice_axes;
 
   // note that conv objects are shared between execution frames, and a lock is needed to avoid multi-thread racing
-  OrtMutex mutex;
+  absl::Mutex mutex;
   IAllocatorUniquePtr<void> memory_for_cudnn_conv_results;
 
   ~CudnnConvState() {
