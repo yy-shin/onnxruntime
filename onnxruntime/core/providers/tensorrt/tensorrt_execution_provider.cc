@@ -390,8 +390,8 @@ TensorrtLogger& GetTensorrtLogger(bool verbose_log) {
   }
   return trt_logger;
 }
-static OrtMutex singleton;
-OrtMutex& TensorrtExecutionProvider::GetApiLock() const {
+static absl::Mutex singleton;
+absl::Mutex& TensorrtExecutionProvider::GetApiLock() const {
   return singleton;
 }
 

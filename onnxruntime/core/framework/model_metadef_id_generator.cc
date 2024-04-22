@@ -11,7 +11,7 @@ int ModelMetadefIdGenerator::GenerateId(const onnxruntime::GraphViewer& graph_vi
                                         HashValue& model_hash) const {
   // if the EP is shared across multiple sessions there's a very small potential for concurrency issues.
   // use a lock when generating an id to be paranoid
-  static OrtMutex mutex;
+  static absl::Mutex mutex;
   absl::MutexLock lock(&mutex);
   model_hash = 0;
 

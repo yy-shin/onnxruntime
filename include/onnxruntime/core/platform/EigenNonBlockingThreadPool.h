@@ -631,7 +631,7 @@ class RunQueue {
 #ifdef USE_LOCK_FREE_QUEUE
   OrtSpinLock spin_lock_;
 #else
-  OrtMutex mutex_;
+  absl::Mutex mutex_;
 #endif
 
   // Low log(kSize) + 1 bits in front_ and back_ contain rolling index of
@@ -1491,7 +1491,7 @@ class ThreadPoolTempl : public onnxruntime::concurrency::ExtendedThreadPoolInter
 
    private:
     std::atomic<ThreadStatus> status{ThreadStatus::Spinning};
-    OrtMutex mutex;
+    absl::Mutex mutex;
     OrtCondVar cv;
   };
 

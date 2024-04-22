@@ -342,7 +342,7 @@ class FusedConv : public onnxruntime::rocm::Conv<T, false> {
   };
 
   struct FusionPlanCache {
-    mutable OrtMutex mutex;
+    mutable absl::Mutex mutex;
     using HashKey = uint32_t;
     std::unordered_map<HashKey, FusionPlanCacheItem> cache_directory_;
 

@@ -60,8 +60,8 @@ static std::atomic<void*>& DefaultLoggerManagerInstance() noexcept {
 #pragma warning(disable : 26426)
 #endif
 
-static OrtMutex& DefaultLoggerMutex() noexcept {
-  static OrtMutex mutex;
+static absl::Mutex& DefaultLoggerMutex() noexcept {
+  static absl::Mutex mutex;
   return mutex;
 }
 

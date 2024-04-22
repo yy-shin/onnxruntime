@@ -28,7 +28,7 @@ using onnxruntime::common::Status;
 namespace onnxruntime {
 
 // Models can only be parsed and built serially in the same process
-OrtMutex g_mutex;
+absl::Mutex g_mutex;
 
 class Memcpy final : public OpKernel {
  public:

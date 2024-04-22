@@ -247,7 +247,7 @@ Status GetMinimalBuildOptimizationHandling(
 std::atomic<uint32_t> InferenceSession::global_session_id_{1};
 std::map<uint32_t, InferenceSession*> InferenceSession::active_sessions_;
 #ifdef _WIN32
-OrtMutex InferenceSession::active_sessions_mutex_;  // Protects access to active_sessions_
+absl::Mutex InferenceSession::active_sessions_mutex_;  // Protects access to active_sessions_
 #endif
 
 static Status FinalizeSessionOptions(const SessionOptions& user_provided_session_options,

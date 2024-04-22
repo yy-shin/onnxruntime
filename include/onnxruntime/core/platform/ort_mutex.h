@@ -4,6 +4,6 @@
 #pragma once
 #include <absl/synchronization/mutex.h>
 namespace onnxruntime {
-using OrtMutex = absl::Mutex;
+using absl::Mutex = absl::Mutex;
 using OrtCondVar = absl::CondVar;
 };  // namespace onnxruntime

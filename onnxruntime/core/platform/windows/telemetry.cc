@@ -57,15 +57,15 @@ TRACELOGGING_DEFINE_PROVIDER(telemetry_provider_handle, "Microsoft.ML.ONNXRuntim
 #pragma warning(pop)
 #endif
 
-OrtMutex WindowsTelemetry::mutex_;
-OrtMutex WindowsTelemetry::provider_change_mutex_;
+absl::Mutex WindowsTelemetry::mutex_;
+absl::Mutex WindowsTelemetry::provider_change_mutex_;
 uint32_t WindowsTelemetry::global_register_count_ = 0;
 bool WindowsTelemetry::enabled_ = true;
 uint32_t WindowsTelemetry::projection_ = 0;
 UCHAR WindowsTelemetry::level_ = 0;
 UINT64 WindowsTelemetry::keyword_ = 0;
 std::vector<WindowsTelemetry::EtwInternalCallback> WindowsTelemetry::callbacks_;
-OrtMutex WindowsTelemetry::callbacks_mutex_;
+absl::Mutex WindowsTelemetry::callbacks_mutex_;
 
 WindowsTelemetry::WindowsTelemetry() {
   absl::MutexLock lock(&mutex_);

@@ -102,7 +102,7 @@ class OnnxRuntimeOpSchemaRegistry : public IOnnxRuntimeOpSchemaCollection {
 
   common::Status RegisterOpSchemaInternal(ONNX_NAMESPACE::OpSchema&& op_schema);
 
-  OrtMutex mutex_;
+  absl::Mutex mutex_;
 
   OpName_Domain_Version_Schema_Map map_;
   DomainToVersionRangeMap domain_version_range_map_;
