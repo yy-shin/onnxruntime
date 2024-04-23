@@ -2,8 +2,7 @@
 #include <core/platform/threadpool.h>
 #include <core/util/thread_utils.h>
 #include <core/session/onnxruntime_c_api.h>
-#include <core/platform/Barrier.h>
-
+#include <absl/synchronization/blocking_counter.h>
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -165,13 +164,13 @@ static void BM_SimpleScheduleWait(benchmark::State& state) {
   std::ptrdiff_t threads = concurrency::ThreadPool::DegreeOfParallelism(tp.get());
 
   for (auto _ : state) {
-    onnxruntime::Barrier barrier(static_cast<unsigned int>(threads));
+    absl::BlockingCounter barrier(static_cast<int>(threads));
     for (std::ptrdiff_t id = 0; id < threads; ++id) {
       ThreadPool::Schedule(tp.get(), [id, threads, len, &barrier]() {
         std::ptrdiff_t start, work_remaining;
         TestPartitionWork(id, threads, len, &start, &work_remaining);
         SimpleForLoop(start, start + work_remaining);
-        barrier.Notify();
+        barrier.DecrementCount();
       });
     }
     barrier.Wait();
