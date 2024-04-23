@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #pragma once
-
+#include <mutex>
 #include <pybind11/pybind11.h>
 
 #include "core/providers/shared_library/provider_api.h"

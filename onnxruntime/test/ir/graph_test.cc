@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <iostream>
+#include <mutex>
 #include "core/common/inlined_containers.h"
 #include "core/common/span_utils.h"
 #include "core/framework/tensorprotoutils.h"

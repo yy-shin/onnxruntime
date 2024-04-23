@@ -14,6 +14,7 @@
 #include <regex>
 #include <set>
 #include <string>
+#include <mutex>
 
 #include "callback.h"
 #include "heap_buffer.h"

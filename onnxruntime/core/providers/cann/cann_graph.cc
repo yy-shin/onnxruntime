@@ -4,7 +4,7 @@
 
 #include <map>
 #include <set>
-
+#include <mutex>
 #include "core/providers/cann/cann_graph.h"
 
 namespace onnxruntime {

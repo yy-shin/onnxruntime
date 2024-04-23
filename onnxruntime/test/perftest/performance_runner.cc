@@ -8,7 +8,7 @@
 
 #include "performance_runner.h"
 #include <iostream>
-
+#include <mutex>
 #include "TestCase.h"
 #include "utils.h"
 #include "ort_test_session.h"

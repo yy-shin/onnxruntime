@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #pragma once
-
+#include <mutex>
 #include <memory>
 #include "core/providers/cuda/cuda_kernel.h"
 #include "contrib_ops/cuda/bert/tensorrt_fused_multihead_attention/mha_runner.h"

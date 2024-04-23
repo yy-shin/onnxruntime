@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
+#include <mutex>
 #include "core/session/environment.h"
 #include "core/session/allocator_adapters.h"
 #include "core/framework/allocator_utils.h"

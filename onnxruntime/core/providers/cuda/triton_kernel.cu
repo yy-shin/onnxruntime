@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
+#include <mutex>
 #include "core/providers/cuda/triton_kernel.h"
 #include "core/framework/tunable.h"
 #include <fstream>

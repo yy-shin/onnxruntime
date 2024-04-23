@@ -10,7 +10,7 @@
 #include <string>
 #include <thread>
 #include <queue>
-
+#include <mutex>
 #include "core/common/denormal.h"
 #include "core/common/logging/logging.h"
 #include "core/common/parse_string.h"
