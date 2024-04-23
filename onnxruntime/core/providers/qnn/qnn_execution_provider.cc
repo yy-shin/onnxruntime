@@ -29,9 +29,9 @@ constexpr const char* QNN = "QNN";
 
 static std::unique_ptr<std::vector<std::function<void()>>> s_run_on_unload_;
 
+static absl::Mutex RunOnUnload_mutex;
 void RunOnUnload(std::function<void()> function) {
-  absl::Mutex mutex;
-  absl::MutexLock guard(&mutex);
+  absl::MutexLock guard(&RunOnUnload_mutex);
   if (!s_run_on_unload_) {
     s_run_on_unload_ = std::make_unique<std::vector<std::function<void()>>>();
   }
