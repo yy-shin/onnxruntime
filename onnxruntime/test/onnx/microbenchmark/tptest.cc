@@ -192,7 +192,7 @@ struct Param {
   std::atomic<int> id = 0;
   std::ptrdiff_t threads;
   std::ptrdiff_t len;
-  onnxruntime::Barrier* barrier;
+  absl::BlockingCounter* barrier;
 };
 VOID NTAPI SimpleCalc(_Inout_ PTP_CALLBACK_INSTANCE, _Inout_ PVOID Context, _Inout_ PTP_WORK) {
   Param* p = (Param*)Context;
@@ -200,7 +200,7 @@ VOID NTAPI SimpleCalc(_Inout_ PTP_CALLBACK_INSTANCE, _Inout_ PVOID Context, _Ino
   int id = p->id++;
   TestPartitionWork(id, p->threads, p->len, &start, &work_remaining);
   SimpleForLoop(start, start + work_remaining);
-  p->barrier->Notify();
+  p->barrier->DecrementCount();
 }
 
 static void BM_SimpleScheduleWaitWindowsTP(benchmark::State& state) {

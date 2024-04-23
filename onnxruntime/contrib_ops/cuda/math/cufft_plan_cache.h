@@ -4,6 +4,7 @@ Copyright(c) 2016 Facebook Inc.
 /* Modifications Copyright (c) Microsoft. */
 
 #pragma once
+#include <mutex>
 #include "core/providers/cuda/cuda_common.h"
 #include "cufft.h"
 #include "cufftXt.h"
