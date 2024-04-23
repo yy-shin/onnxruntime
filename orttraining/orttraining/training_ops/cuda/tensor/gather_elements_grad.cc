@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
+#include <mutex>
 #include "orttraining/training_ops/cuda/tensor/gather_elements_grad.h"
 
 #include "core/providers/common.h"

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <absl/synchronization/blocking_counter.h>
+
 #include "core/platform/threadpool.h"
 #include "core/platform/EigenNonBlockingThreadPool.h"
 #include "core/platform/ort_mutex.h"
@@ -84,7 +86,7 @@ void TestBatchParallelFor(const std::string& name, int num_threads, int num_task
   });
   ValidateTestData(*test_data);
 }
-#if 0
+
 void TestConcurrentParallelFor(const std::string& name, int num_threads, int num_concurrent, int num_tasks, int dynamic_block_base = 0, bool mock_hybrid = false) {
   // Test running multiple concurrent loops over the same thread pool.  This aims to provoke a
   // more diverse mix of interleavings than with a single loop running at a time.
@@ -92,7 +94,7 @@ void TestConcurrentParallelFor(const std::string& name, int num_threads, int num
     CreateThreadPoolAndTest(
         name, num_threads, [&](ThreadPool* tp) {
           std::vector<std::unique_ptr<TestData>> td;
-          onnxruntime::Barrier b(num_concurrent - 1);
+          absl::BlockingCounter b(num_concurrent - 1);
 
           // Each concurrent tests runs with its own set of counters
           for (int c = 0; c < num_concurrent; c++) {
@@ -105,7 +107,7 @@ void TestConcurrentParallelFor(const std::string& name, int num_threads, int num
               ThreadPool::TrySimpleParallelFor(tp, num_tasks, [&](std::ptrdiff_t i) {
                 IncrementElement(*td[c], i);
               });
-              b.Notify();
+              b.DecrementCount();
             });
           }
 
@@ -123,7 +125,7 @@ void TestConcurrentParallelFor(const std::string& name, int num_threads, int num
         dynamic_block_base, mock_hybrid);
   }
 }
-#endif
+
 void TestBurstScheduling(const std::string& name, int num_tasks) {
   // Test submitting a burst of functions for executing.  The aim is to provoke cases such
   // as the thread pool's work queues being full.
@@ -275,7 +277,7 @@ TEST(ThreadPoolTest, TestBatchParallelFor_2_Thread_50_Task_100_Batch) {
 TEST(ThreadPoolTest, TestBatchParallelFor_2_Thread_81_Task_20_Batch) {
   TestBatchParallelFor("TestBatchParallelFor_2_Thread_81_Task_20_Batch", 2, 81, 20);
 }
-#if 0
+
 TEST(ThreadPoolTest, TestConcurrentParallelFor_0Thread_1Conc_0Tasks) {
   TestConcurrentParallelFor("TestConcurrentParallelFor_0Thread_1Conc_0Tasks", 0, 1, 0);
 }
@@ -415,7 +417,7 @@ TEST(ThreadPoolTest, TestConcurrentParallelFor_4Thread_4Conc_1MTasks_dynamic_blo
 TEST(ThreadPoolTest, TestConcurrentParallelFor_4Thread_4Conc_1MTasks_dynamic_block_base_128_hybrid) {
   TestConcurrentParallelFor("TestConcurrentParallelFor_4Thread_4Conc_1MTasks_dynamic_block_base_128", 4, 4, 1000000, 128, true);
 }
-#endif
+
 TEST(ThreadPoolTest, TestBurstScheduling_0Tasks) {
   TestBurstScheduling("TestBurstScheduling_0Tasks", 0);
 }

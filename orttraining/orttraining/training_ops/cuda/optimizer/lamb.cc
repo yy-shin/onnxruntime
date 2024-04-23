@@ -10,7 +10,7 @@
 #include "orttraining/training_ops/cuda/optimizer/common.h"
 
 #include <cmath>
-
+#include <mutex>
 namespace onnxruntime {
 namespace cuda {
 
