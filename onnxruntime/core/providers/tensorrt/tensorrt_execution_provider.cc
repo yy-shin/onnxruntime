@@ -1600,7 +1600,7 @@ TensorrtExecutionProvider::TensorrtExecutionProvider(const TensorrtExecutionProv
   }
 
   {
-    absl::MutexLock lock (&GetApiLock())();
+    absl::MutexLock lock(&GetApiLock());
     runtime_ = std::unique_ptr<nvinfer1::IRuntime>(nvinfer1::createInferRuntime(GetTensorrtLogger(detailed_build_log_)));
   }
 
@@ -1741,7 +1741,7 @@ Status TensorrtExecutionProvider::OnRunEnd(bool sync_stream, const onnxruntime::
 nvinfer1::IBuilder* TensorrtExecutionProvider::GetBuilder(TensorrtLogger& trt_logger) const {
   if (!builder_) {
     {
-      absl::MutexLock lock (&GetApiLock())();
+      absl::MutexLock lock(&GetApiLock());
       builder_ = std::unique_ptr<nvinfer1::IBuilder>(nvinfer1::createInferBuilder(trt_logger));
     }
   }
@@ -2822,7 +2822,7 @@ Status TensorrtExecutionProvider::CreateNodeComputeInfoFromGraph(const GraphView
     }
     {
       // ifstream file check, engine serialization/deserialization and engine build are in critical section. It needs lock protection to prevent race condition when inferencing with multithreading.
-      absl::MutexLock lock (&GetApiLock())();
+      absl::MutexLock lock(&GetApiLock());
 
       // If explicit profile flag is on and engine cache enable flag is on,
       // we need to compare explicit profiles and profiles used to build the engine in order to decide whether to rebuild the engine.
