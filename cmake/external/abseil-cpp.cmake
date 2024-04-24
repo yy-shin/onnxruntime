@@ -59,6 +59,7 @@ absl::node_hash_map
 absl::node_hash_set
 absl::optional
 absl::raw_hash_set
+absl::raw_logging_internal
 absl::span
 absl::str_format
 absl::synchronization
