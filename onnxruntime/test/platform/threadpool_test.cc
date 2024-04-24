@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include <absl/synchronization/blocking_counter.h>
-
+#include <absl/synchronization/notification.h>
 #include "core/platform/threadpool.h"
 #include "core/platform/EigenNonBlockingThreadPool.h"
 #include "core/platform/ort_mutex.h"
@@ -524,7 +524,7 @@ TEST(ThreadPoolTest, TestStackSize) {
   auto tp = std::make_unique<ThreadPool>(&onnxruntime::Env::Default(), to, nullptr, 2, true);
   typedef void(WINAPI * FnGetCurrentThreadStackLimits)(_Out_ PULONG_PTR LowLimit, _Out_ PULONG_PTR HighLimit);
 
-  Notification n;
+  absl::Notification n;
   ULONG_PTR low_limit, high_limit;
   bool has_thread_limit_info = false;
   ThreadPool::Schedule(tp.get(), [&]() {
