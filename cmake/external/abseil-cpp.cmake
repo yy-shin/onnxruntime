@@ -65,4 +65,10 @@ absl::str_format
 absl::strings
 absl::synchronization
 absl::throw_delegate
-absl::time)
+absl::time
+abs::base
+        abs::base_internal
+        abs::config
+        abs::core_headers
+        abs::dynamic_annotations
+        abs::raw_logging_internal)
