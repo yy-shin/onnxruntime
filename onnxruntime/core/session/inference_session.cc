@@ -46,7 +46,6 @@
 #include "core/optimizer/selectors_actions/selector_action_transformer_apply_contexts.h"
 #include "core/optimizer/transformer_memcpy.h"
 #include "core/optimizer/transpose_optimization/ort_optimizer_utils.h"
-#include "core/platform/Barrier.h"
 #include "core/platform/threadpool.h"
 #ifdef _WIN32
 #include "core/platform/tracing.h"
@@ -3135,7 +3134,7 @@ common::Status InferenceSession::AddPredefinedTransformers(
 
 #endif  // !defined(ORT_MINIMAL_BUILD)
 
-common::Status InferenceSession::WaitForNotification(Notification* p_executor_done, int64_t timeout_in_ms) {
+common::Status InferenceSession::WaitForNotification(absl::Notification* p_executor_done, int64_t timeout_in_ms) {
   if (timeout_in_ms > 0) {
     p_executor_done->WaitForNotificationWithTimeout(absl::Milliseconds(timeout_in_ms));
   } else

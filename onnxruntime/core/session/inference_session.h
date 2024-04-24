@@ -7,6 +7,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <absl/synchronization/notification.h>
 
 #include "core/common/common.h"
 #include "core/common/inlined_containers.h"
@@ -28,7 +29,6 @@
 #include "core/optimizer/graph_transformer_mgr.h"
 #include "core/optimizer/insert_cast_transformer.h"
 #include "core/platform/ort_mutex.h"
-#include "core/platform/Barrier.h"
 #ifdef ENABLE_LANGUAGE_INTEROP_OPS
 #include "core/language_interop_ops/language_interop_ops.h"
 #endif
@@ -664,7 +664,7 @@ class InferenceSession {
                                                      const InputOutputDefMetaMap& input_output_meta_map,
                                                      ArgType arg_type) const;
 
-  [[nodiscard]] common::Status WaitForNotification(Notification* p_executor_done, int64_t timeout_in_ms);
+  [[nodiscard]] common::Status WaitForNotification(absl::Notification* p_executor_done, int64_t timeout_in_ms);
 
   template <typename T>
   void StartProfiling(const std::basic_string<T>& file_prefix);

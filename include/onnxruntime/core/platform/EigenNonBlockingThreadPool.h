@@ -52,7 +52,6 @@
 #include "core/common/spin_pause.h"
 #include "core/platform/ort_mutex.h"
 #include "core/platform/ort_spin_lock.h"
-#include "core/platform/Barrier.h"
 
 // ORT thread pool overview
 // ------------------------
@@ -1492,7 +1491,7 @@ class ThreadPoolTempl : public onnxruntime::concurrency::ExtendedThreadPoolInter
    private:
     std::atomic<ThreadStatus> status{ThreadStatus::Spinning};
     absl::Mutex mutex;
-    OrtCondVar cv;
+    absl::CondVar cv;
   };
 
   Environment& env_;

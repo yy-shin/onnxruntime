@@ -9,7 +9,7 @@
 #include <core/providers/cpu/cpu_execution_provider.h>
 #include "core/session/environment.h"
 #include <core/common/logging/sinks/clog_sink.h>
-#include <core/platform/Barrier.h>
+#include <absl/synchronization/notification.h>
 #include <core/graph/model.h>
 #include <core/graph/graph.h>
 #include <core/framework/kernel_def_builder.h>
