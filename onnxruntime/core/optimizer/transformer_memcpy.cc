@@ -259,6 +259,7 @@ void TransformerMemcpyImpl::ProcessDefs(onnxruntime::Node& node, const KernelReg
     // TODO: copy between devices? i.e. multiple GPUs
     if (node_provider_type != onnxruntime::kCpuExecutionProvider &&
         node_provider_type != onnxruntime::kVitisAIExecutionProvider &&
+        node_provider_type != onnxruntime::kQnnExecutionProvider &&
         !node_provider_type.empty()) {
       ORT_THROW("Execution type '", node_provider_type, "' doesn't support memcpy ");
     }
