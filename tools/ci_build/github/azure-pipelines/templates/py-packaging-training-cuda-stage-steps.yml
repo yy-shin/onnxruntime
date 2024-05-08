@@ -203,6 +203,14 @@ stages:
           condition: succeededOrFailed()
           workingDirectory: $(Build.SourcesDirectory)
 
+        - scripts: |
+            ls -l /mnist
+            ls -l /bert_data
+            ls -l /hf_models_cache
+          displayName: 'ls mounted data directories'
+          condition: succeededOrFailed()
+          workingDirectory: $(Build.SourcesDirectory)
+
         - task: CmdLine@2
           displayName: 'test ortmodule'
           inputs:
