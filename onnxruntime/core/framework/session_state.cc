@@ -114,7 +114,7 @@ AllocatorPtr SessionState::GetAllocator(const OrtDevice& device) const noexcept 
   return nullptr;
 }
 
-void SessionState::UpdateAllocatorsWithEnvAllocators(const std::vector<AllocatorPtr>& env_allocators) {
+void SessionState::UpdateAllocatorsWithEnvAllocators(gsl::span<const AllocatorPtr> env_allocators) {
   for (const auto& env_alloc : env_allocators) {
     (*allocators_)[env_alloc->Info().device] = env_alloc;
   }

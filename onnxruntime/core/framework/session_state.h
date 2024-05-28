@@ -62,6 +62,98 @@ class DeviceStreamCollection;
 class MemoryInfo;
 #endif
 
+struct NodeInfo {
+  /**
+   *
+   * \param index0
+   * \param p_node0 Nullable
+   * \param kci0 Nullable
+   */
+  NodeInfo(size_t index0, const onnxruntime::Node* p_node0, const KernelCreateInfo* kci0, const OrtDevice& device0, int stream_index0 = -1)
+      : index(index0), p_node(p_node0), kci(kci0), device(&device0), stream_index(stream_index0) {}
+
+  size_t index;
+  // Nullable
+  const onnxruntime::Node* p_node = nullptr;
+  // Nullable
+  const KernelCreateInfo* kci = nullptr;
+  const OrtDevice* device = nullptr;
+  int stream_index;
+};
+
+
+struct ISessionState {
+  ISessionState() = default;
+  virtual ~ISessionState() = default;
+  ORT_DISALLOW_COPY_ASSIGNMENT_AND_MOVE(ISessionState);
+
+  virtual const GraphViewer& GetGraphViewer() const noexcept = 0;
+  virtual const OpKernel* GetKernel(size_t node_id) const = 0;
+
+  virtual const ExecutionProviders& GetExecutionProviders() const noexcept = 0;
+  virtual AllocatorPtr GetAllocator(const OrtMemoryInfo& location) const noexcept = 0;
+  virtual AllocatorPtr GetAllocator(const OrtDevice& device) const noexcept = 0;
+  virtual const AllocatorMap& GetAllocators() const = 0;
+
+  virtual const OrtValueNameIdxMap& GetOrtValueNameIdxMap() const noexcept = 0;
+
+  // Check where used and how to override
+  virtual const std::unordered_map<int, OrtValue>& GetInitializedTensors() const = 0;
+  virtual const std::unordered_map<int, OrtValue>& GetConstantInitializedTensors() const = 0;
+
+#if !defined(DISABLE_SPARSE_TENSORS)
+  virtual bool IsSparseInitializer(int ort_value_index) const = 0;
+#endif
+
+#ifdef ENABLE_TRAINING
+  // This is referenced in training::TrainingSession. Should be removed when this class is removed.
+  /**
+    Get some initialized tensors (weights).
+    @param interested_weights The names of the weights to retrieve.
+    @param allow_missing_weights Whether to allow names in interested_weights
+           with no corresponding weight.
+    @param[out] retrieved_weights The retrieved weights.
+    @return The status of the operation.
+    */
+  virtual Status GetInitializedTensors(
+      const std::unordered_set<std::string>& interested_weights,
+      bool allow_missing_weights, NameMLValMap& retrieved_weights) const = 0;
+
+  /**
+    Get some initialized tensors (weights).
+    Any names in interested_weights with no corresponding weight are ignored.
+    */
+  virtual NameMLValMap GetInitializedTensors(const std::unordered_set<std::string>& interested_weights) const = 0;
+#endif
+
+  virtual const SequentialExecutionPlan* GetExecutionPlan() const = 0;
+  virtual const std::vector<AllocPlanPerValue>& GetPerValueAllocPlan() const = 0;
+
+  virtual const logging::Logger& Logger() const noexcept = 0;
+  virtual profiling::Profiler& Profiler() const noexcept = 0;
+
+#if !defined(ORT_MINIMAL_BUILD) && defined(ORT_MEMORY_PROFILE)
+  virtual MemoryProfiler* GetMemoryProfiler() const noexcept = 0;
+#endif
+
+  virtual const MemoryPatternGroup* GetMemoryPatternGroup(
+      gsl::span<const OrtValue> tensor_inputs,
+      gsl::span<const int> feed_mlvalue_idxs,
+      const InlinedHashMap<int, TensorShape>*& inferred_shapes) const = 0;
+
+  virtual Status UpdateMemoryPatternGroupCache(gsl::span<const OrtValue> tensor_inputs,
+                                               MemoryPatternGroup mem_patterns) const = 0;
+
+  virtual bool GetUseDeterministicCompute() const = 0;
+
+  virtual bool GetEnableMemoryPattern() const = 0;
+
+  virtual bool GetEnableMemoryReuse() const = 0;
+
+  virtual common::Status GetInputNodeInfo(const std::string& input_name,
+                                          InlinedVector<NodeInfo>& node_info_vec) const = 0;
+};
+
 /**
  * SessionState should be modified by the inference session class only.
  * It is supposed to be passed by const-ref only to all the executors.
@@ -85,7 +177,7 @@ class MemoryInfo;
 using SubgraphSessionStateMap =
     std::unordered_map<onnxruntime::NodeIndex, std::unordered_map<std::string, std::unique_ptr<SessionState>>>;
 
-class SessionState {
+class SessionState : public ISessionState {
  public:
   SessionState(Graph& graph,
                const ExecutionProviders& execution_providers,
@@ -105,12 +197,12 @@ class SessionState {
   }
 
   // Graph viewer. CreateGraphInfo must have been called previously.
-  const GraphViewer& GetGraphViewer() const noexcept { return *graph_viewer_; };
+  const GraphViewer& GetGraphViewer() const noexcept override { return *graph_viewer_; };
 
   // kernels
   // Get kernel for specified node.
   // It should called right before graph execution only.
-  const OpKernel* GetKernel(size_t node_id) const {
+  const OpKernel* GetKernel(size_t node_id) const override {
     return (node_id < session_kernels_.size()) ? session_kernels_[node_id].get() : nullptr;
   }
 
@@ -118,24 +210,24 @@ class SessionState {
     return (node_id < session_kernels_.size()) ? session_kernels_[node_id].get() : nullptr;
   }
 
-  const ExecutionProviders& GetExecutionProviders() const noexcept { return execution_providers_; }
+  const ExecutionProviders& GetExecutionProviders() const noexcept override { return execution_providers_; }
 
   /**
     Get the allocator for the given OrtMemoryInfo location
     */
-  AllocatorPtr GetAllocator(const OrtMemoryInfo& location) const noexcept;
+  AllocatorPtr GetAllocator(const OrtMemoryInfo& location) const noexcept override;
 
   /** Get the allocator for a given OrtDevice. The first allocator that matches will be returned. */
-  AllocatorPtr GetAllocator(const OrtDevice& device) const noexcept;
+  AllocatorPtr GetAllocator(const OrtDevice& device) const noexcept override;
 
   /*
    * Get allocators.
    */
-  const AllocatorMap& GetAllocators() const { return *allocators_; }
+  const AllocatorMap& GetAllocators() const override { return *allocators_; }
 
-  void UpdateAllocatorsWithEnvAllocators(const std::vector<AllocatorPtr>&);
+  void UpdateAllocatorsWithEnvAllocators(gsl::span<const AllocatorPtr>);
 
-  const OrtValueNameIdxMap& GetOrtValueNameIdxMap() const noexcept { return ort_value_name_idx_map_; }
+  const OrtValueNameIdxMap& GetOrtValueNameIdxMap() const noexcept override { return ort_value_name_idx_map_; }
 
   /**
    * Adds an initialized tensor (weight) so that it can be used by the
@@ -145,7 +237,8 @@ class SessionState {
    * If 'sparse' is true the tensor value represents a densified weight that was initially stored in the model
    * as sparse tensor.
    */
-  Status AddInitializedTensor(int ort_value_index, const OrtValue& ort_value, const OrtCallback* d, bool constant, bool sparse);
+  Status AddInitializedTensor(int ort_value_index, const OrtValue& ort_value, const OrtCallback* d, bool constant,
+                              bool sparse);
 
   /**
    * Gets the map of ort_value_index to initialized tensors (weights) so that it can be used by the
@@ -159,10 +252,10 @@ class SessionState {
    * and cannot be overridden at runtime.
    * The lifetime of returned OrtValues are limited by this SessionState object.
    */
-  const std::unordered_map<int, OrtValue>& GetConstantInitializedTensors() const;
+  const std::unordered_map<int, OrtValue>& GetConstantInitializedTensors() const override;
 
 #if !defined(DISABLE_SPARSE_TENSORS)
-  bool IsSparseInitializer(int ort_value_index) const;
+  bool IsSparseInitializer(int ort_value_index) const override;
 #endif
 
 #ifdef ENABLE_TRAINING
@@ -177,17 +270,17 @@ class SessionState {
     */
   Status GetInitializedTensors(
       const std::unordered_set<std::string>& interested_weights,
-      bool allow_missing_weights, NameMLValMap& retrieved_weights) const;
+      bool allow_missing_weights, NameMLValMap& retrieved_weights) const override;
 
   /**
     Get some initialized tensors (weights).
     Any names in interested_weights with no corresponding weight are ignored.
     */
-  NameMLValMap GetInitializedTensors(const std::unordered_set<std::string>& interested_weights) const;
+  NameMLValMap GetInitializedTensors(const std::unordered_set<std::string>& interested_weights) const override;
 #endif
 
   // execution plan. nullptr until FinalizeSessionState is called
-  const SequentialExecutionPlan* GetExecutionPlan() const;
+  const SequentialExecutionPlan* GetExecutionPlan() const override;
 
   const std::vector<AllocPlanPerValue>& GetPerValueAllocPlan() const;
 
@@ -195,16 +288,16 @@ class SessionState {
   Get the logger for this session.
   Falls back to returning Logging::LoggingManager::DefaultLogger if SetLogger has not been called.
   */
-  const logging::Logger& Logger() const noexcept { return logger_; }
+  const logging::Logger& Logger() const noexcept override { return logger_; }
 
   /**
   Get the profiler for this session. It needs to be enabled via the InferenceSession to perform
   profiling actions.
   */
-  profiling::Profiler& Profiler() const noexcept { return profiler_; }
+  profiling::Profiler& Profiler() const noexcept override { return profiler_; }
 
 #if !defined(ORT_MINIMAL_BUILD) && defined(ORT_MEMORY_PROFILE)
-  MemoryProfiler* GetMemoryProfiler() const noexcept { return memory_profiler_; }
+  MemoryProfiler* GetMemoryProfiler() const noexcept override { return memory_profiler_; }
 
   void SetMemoryProfiler(MemoryProfiler* memory_profiler) noexcept {
     memory_profiler_ = memory_profiler;
@@ -223,7 +316,7 @@ class SessionState {
   const MemoryPatternGroup* GetMemoryPatternGroup(
       gsl::span<const OrtValue> tensor_inputs,
       gsl::span<const int> feed_mlvalue_idxs,
-      const InlinedHashMap<int, TensorShape>*& inferred_shapes) const;
+      const InlinedHashMap<int, TensorShape>*& inferred_shapes) const override;
 
   /**
   Set generated memory pattern with a given input shapes.
@@ -233,18 +326,18 @@ class SessionState {
   Status UpdateMemoryPatternGroupCache(gsl::span<const OrtValue> tensor_inputs,
                                        MemoryPatternGroup mem_patterns) const;
 
-  bool GetUseDeterministicCompute() const { return sess_options_.use_deterministic_compute; }
+  bool GetUseDeterministicCompute() const override { return sess_options_.use_deterministic_compute; }
 
   /**
   Get enable memory pattern flag
   */
-  bool GetEnableMemoryPattern() const;
+  bool GetEnableMemoryPattern() const override;
 
   /**
   Get enable memory re-use flag.
   */
 
-  bool GetEnableMemoryReuse() const;
+  bool GetEnableMemoryReuse() const override;
 
   /**
   Update enable_mem_pattern_ flag according to the presence of graph inputs' shape
@@ -252,29 +345,12 @@ class SessionState {
   */
   void ResolveMemoryPatternFlag();
 
-  struct NodeInfo {
-    /**
-     *
-     * \param index0
-     * \param p_node0 Nullable
-     * \param kci0 Nullable
-     */
-    NodeInfo(size_t index0, const onnxruntime::Node* p_node0, const KernelCreateInfo* kci0, const OrtDevice& device0, int stream_index0 = -1)
-        : index(index0), p_node(p_node0), kci(kci0), device(&device0), stream_index(stream_index0) {}
-
-    size_t index;
-    // Nullable
-    const onnxruntime::Node* p_node = nullptr;
-    // Nullable
-    const KernelCreateInfo* kci = nullptr;
-    const OrtDevice* device = nullptr;
-    int stream_index;
-  };
+  using NodeInfo = onnxruntime::NodeInfo;
 
   using NameNodeInfoMapType = InlinedHashMap<std::string, InlinedVector<NodeInfo>>;
 
   common::Status AddInputNameToNodeInfoMapping(const std::string& input_name, const NodeInfo& node_info);
-  common::Status GetInputNodeInfo(const std::string& input_name, InlinedVector<NodeInfo>& node_info_vec) const;
+  common::Status GetInputNodeInfo(const std::string& input_name, InlinedVector<NodeInfo>& node_info_vec) const override;
   const NameNodeInfoMapType& GetInputNodeInfoMap() const;
 
   void AddOutputNameToNodeInfoMapping(const std::string& output_name, const NodeInfo& node_info);
