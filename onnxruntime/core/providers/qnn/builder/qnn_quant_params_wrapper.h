@@ -77,6 +77,19 @@ class QnnQuantParamsWrapper {
     return Status::OK();
   }
 
+  Status GetAxis(int32_t& axis) {
+    if (params_.quantizationEncoding == QNN_QUANTIZATION_ENCODING_AXIS_SCALE_OFFSET) {
+      axis = params_.axisScaleOffsetEncoding.axis;
+    } else if (params_.quantizationEncoding == QNN_QUANTIZATION_ENCODING_BW_AXIS_SCALE_OFFSET) {
+      axis = params_.bwAxisScaleOffsetEncoding.axis;
+    } else {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "Unhandled quantization encoding: ", params_.quantizationEncoding);
+    }
+
+    return Status::OK();
+  }
+
   // Handle "unsqueeze" of a per-channel quantized tensor. The quantization parameter's axis
   // may need to be shifted if the unsqueeze inserted 1s before the quantization axis.
   template <typename IntType>
@@ -88,16 +101,8 @@ class QnnQuantParamsWrapper {
 
     ORT_RETURN_IF_NOT(orig_shape.size() < new_shape.size(), "Expected unsqueezed shape to have a greater rank.");
 
-    // Get the axis value.
     int32_t axis = 0;
-    if (params_.quantizationEncoding == QNN_QUANTIZATION_ENCODING_AXIS_SCALE_OFFSET) {
-      axis = params_.axisScaleOffsetEncoding.axis;
-    } else if (params_.quantizationEncoding == QNN_QUANTIZATION_ENCODING_BW_AXIS_SCALE_OFFSET) {
-      axis = params_.bwAxisScaleOffsetEncoding.axis;
-    } else {
-      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
-                             "Unhandled quantization encoding: ", params_.quantizationEncoding);
-    }
+    ORT_RETURN_IF_ERROR(GetAxis(axis));
 
     // Find where the axis was moved to after unsqueeze.
     size_t num_found = 0;

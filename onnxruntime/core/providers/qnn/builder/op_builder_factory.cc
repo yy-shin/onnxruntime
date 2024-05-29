@@ -51,7 +51,6 @@ OpBuilderRegistrations::OpBuilderRegistrations() {
     CreateSimpleOpBuilder("Sub", *this);
     CreateSimpleOpBuilder("Tanh", *this);
 
-    CreateSimpleOpBuilder("MatMul", *this);
     CreateSimpleOpBuilder("Concat", *this);
 
     CreateSimpleOpBuilder("QuantizeLinear", *this);
@@ -170,6 +169,10 @@ OpBuilderRegistrations::OpBuilderRegistrations() {
 
   {
     CreateHardSigmoidOpBuilder("HardSigmoid", *this);
+  }
+
+  {
+    CreateMatMulOpBuilder("MatMul", *this);
   }
 }
 
