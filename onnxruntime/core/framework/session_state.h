@@ -62,26 +62,6 @@ class DeviceStreamCollection;
 class MemoryInfo;
 #endif
 
-struct NodeInfo {
-  /**
-   *
-   * \param index0
-   * \param p_node0 Nullable
-   * \param kci0 Nullable
-   */
-  NodeInfo(size_t index0, const onnxruntime::Node* p_node0, const KernelCreateInfo* kci0, const OrtDevice& device0, int stream_index0 = -1)
-      : index(index0), p_node(p_node0), kci(kci0), device(&device0), stream_index(stream_index0) {}
-
-  size_t index;
-  // Nullable
-  const onnxruntime::Node* p_node = nullptr;
-  // Nullable
-  const KernelCreateInfo* kci = nullptr;
-  const OrtDevice* device = nullptr;
-  int stream_index;
-};
-
-
 struct ISessionState {
   ISessionState() = default;
   virtual ~ISessionState() = default;
@@ -150,8 +130,56 @@ struct ISessionState {
 
   virtual bool GetEnableMemoryReuse() const = 0;
 
-  virtual common::Status GetInputNodeInfo(const std::string& input_name,
-                                          InlinedVector<NodeInfo>& node_info_vec) const = 0;
+  struct NodeInfo {
+    /**
+     *
+     * \param index0
+     * \param p_node0 Nullable
+     * \param kci0 Nullable
+     */
+    NodeInfo(size_t index0, const onnxruntime::Node* p_node0, const KernelCreateInfo* kci0, const OrtDevice& device0, int stream_index0 = -1)
+        : index(index0), p_node(p_node0), kci(kci0), device(&device0), stream_index(stream_index0) {}
+
+    size_t index;
+    // Nullable
+    const onnxruntime::Node* p_node = nullptr;
+    // Nullable
+    const KernelCreateInfo* kci = nullptr;
+    const OrtDevice* device = nullptr;
+    int stream_index;
+  };
+
+  using NameNodeInfoMapType = InlinedHashMap<std::string, InlinedVector<NodeInfo>>;
+
+  // virtual  common::Status AddInputNameToNodeInfoMapping(const std::string& input_name, const NodeInfo& node_info) = 0;
+  // virtual common::Status GetInputNodeInfo(const std::string& input_name,
+  //                                         InlinedVector<NodeInfo>& node_info_vec) const = 0;
+  virtual const NameNodeInfoMapType& GetOutputNodeInfoMap() const = 0;
+
+  // const KernelCreateInfo& GetNodeKernelCreateInfo(NodeIndex node_index) const;
+
+  virtual const SessionState* GetSubgraphSessionState(NodeIndex index, const std::string& attribute_name) const = 0;
+
+  virtual concurrency::ThreadPool* GetThreadPool() const noexcept = 0;
+  virtual concurrency::ThreadPool* GetInterOpThreadPool() const noexcept = 0;
+
+  // const FuncManager& GetFuncMgr() const noexcept { return fused_funcs_mgr_; }
+  // FuncManager& GetMutableFuncMgr() noexcept { return fused_funcs_mgr_; }
+
+  virtual const DataTransferManager& GetDataTransferMgr() const noexcept = 0;
+
+  virtual const NodeIndexInfo& GetNodeIndexInfo() const = 0;
+
+#ifdef ENABLE_TRAINING
+  virtual const InlinedHashSet<NodeIndex>* GetToBeExecutedRange(gsl::span<int const> fetch_mlvalue_idxs) const = 0;
+#endif
+
+  // subgraph SessionState. entry for node containing subgraph, with value containing attribute:SessionState pair
+  // as a node may contain multiple subgraphs (e.g. 'If' has one for both the 'then' and 'else' branches).
+  using SubgraphSessionStateMap =
+      std::unordered_map<onnxruntime::NodeIndex, std::unordered_map<std::string, std::unique_ptr<ISessionState>>>;
+
+  virtual SessionState* Parent() = 0;
 };
 
 /**
@@ -171,12 +199,6 @@ struct ISessionState {
  * Then you can use:
  *   s.GetKernel(...);
  */
-
-// subgraph SessionState. entry for node containing subgraph, with value containing attribute:SessionState pair
-// as a node may contain multiple subgraphs (e.g. 'If' has one for both the 'then' and 'else' branches).
-using SubgraphSessionStateMap =
-    std::unordered_map<onnxruntime::NodeIndex, std::unordered_map<std::string, std::unique_ptr<SessionState>>>;
-
 class SessionState : public ISessionState {
  public:
   SessionState(Graph& graph,
@@ -345,38 +367,35 @@ class SessionState : public ISessionState {
   */
   void ResolveMemoryPatternFlag();
 
-  using NodeInfo = onnxruntime::NodeInfo;
-
-  using NameNodeInfoMapType = InlinedHashMap<std::string, InlinedVector<NodeInfo>>;
-
   common::Status AddInputNameToNodeInfoMapping(const std::string& input_name, const NodeInfo& node_info);
-  common::Status GetInputNodeInfo(const std::string& input_name, InlinedVector<NodeInfo>& node_info_vec) const override;
+  common::Status GetInputNodeInfo(const std::string& input_name, InlinedVector<NodeInfo>& node_info_vec) const;
   const NameNodeInfoMapType& GetInputNodeInfoMap() const;
 
   void AddOutputNameToNodeInfoMapping(const std::string& output_name, const NodeInfo& node_info);
   common::Status GetOutputNodeInfo(const std::string& output_name, InlinedVector<NodeInfo>& node_info_vec) const;
-  const NameNodeInfoMapType& GetOutputNodeInfoMap() const;
+  const NameNodeInfoMapType& GetOutputNodeInfoMap() const override;
 
   // Get the KernelCreateInfo entry for a node. SessionState must be finalized before calling.
   const KernelCreateInfo& GetNodeKernelCreateInfo(NodeIndex node_index) const;
 
   /// Return SessionState for the given Node index and attribute name if found.
-  const SessionState* GetSubgraphSessionState(NodeIndex index, const std::string& attribute_name) const;
+  const SessionState* GetSubgraphSessionState(NodeIndex index, const std::string& attribute_name) const override;
 
-  concurrency::ThreadPool* GetThreadPool() const noexcept { return thread_pool_; }
-  concurrency::ThreadPool* GetInterOpThreadPool() const noexcept { return inter_op_thread_pool_; }
+  concurrency::ThreadPool* GetThreadPool() const noexcept override { return thread_pool_; }
+  concurrency::ThreadPool* GetInterOpThreadPool() const noexcept override { return inter_op_thread_pool_; }
 
   const FuncManager& GetFuncMgr() const noexcept { return fused_funcs_mgr_; }
   FuncManager& GetMutableFuncMgr() noexcept { return fused_funcs_mgr_; }
 
-  const DataTransferManager& GetDataTransferMgr() const noexcept { return data_transfer_mgr_; }
+  const DataTransferManager& GetDataTransferMgr() const noexcept override { return data_transfer_mgr_; }
 
-  InlinedVector<BufferUniquePtr>& GetMutableWeightsBuffers() noexcept { return weights_buffers_; }
+  // Unused
+  // InlinedVector<BufferUniquePtr>& GetMutableWeightsBuffers() noexcept { return weights_buffers_; }
 
-  const NodeIndexInfo& GetNodeIndexInfo() const;
+  const NodeIndexInfo& GetNodeIndexInfo() const override;
 #ifdef ENABLE_TRAINING
   void UpdateToBeExecutedRange(gsl::span<int const> fetch_mlvalue_idxs);
-  const InlinedHashSet<NodeIndex>* GetToBeExecutedRange(gsl::span<int const> fetch_mlvalue_idxs) const;
+  const InlinedHashSet<NodeIndex>* GetToBeExecutedRange(gsl::span<int const> fetch_mlvalue_idxs) const override;
 #endif
 
   Status FinalizeSessionState(const std::basic_string<PATH_CHAR_TYPE>& graph_loc,
@@ -384,7 +403,7 @@ class SessionState : public ISessionState {
                               bool remove_initializers = true,
                               bool saving_ort_format = false);
 
-  SessionState* Parent() {
+  SessionState* Parent() override {
     return parent_;
   }
 
