@@ -22,6 +22,15 @@ SVMRegressor<T>::SVMRegressor(const OpKernelInfo& info)
   ORT_THROW_IF_ERROR(info.GetAttr<int64_t>("n_supports", &vector_count));
   vector_count_ = narrow<ptrdiff_t>(vector_count);
   ORT_THROW_IF_ERROR(info.GetAttrs<float>("rho", rho_));
+
+  // 1. Need to change Onnx
+  //    Adding supoort for rho_as_tensor in the op;
+  // 2. Need to change onnx converter
+  //    Adding converter to convert rho_as_tensor from scipy format
+  // 3. Need to change onnxruntime
+  //    Adding support for rho_as_tensor in the svmregressor.cc
+
+
   ORT_THROW_IF_ERROR(info.GetAttrs<float>("coefficients", coefficients_));
   ORT_ENFORCE(!coefficients_.empty());
 
