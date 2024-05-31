@@ -23,12 +23,14 @@ SVMRegressor<T>::SVMRegressor(const OpKernelInfo& info)
   vector_count_ = narrow<ptrdiff_t>(vector_count);
   ORT_THROW_IF_ERROR(info.GetAttrs<float>("rho", rho_));
 
-  // 1. Need to change Onnx
-  //    Adding supoort for rho_as_tensor in the op;
+  // TODO: Adding Support for rho and support_vectors as list of doubles
+  // 1. Need to change from Onnx
+  //    Adding the supoort for rho_as_tensor and support_vectors_as_tensor in the op
+  //    Or remove rho and support_vectors from the attributes and make them as the input tensors
   // 2. Need to change onnx converter
-  //    Adding converter to convert rho_as_tensor from scipy format
+  //    Update skl2Onnx converter to include rho_as_tensor and support_vectors_as_tensor attribute (or input tensors) from scipy model format
   // 3. Need to change onnxruntime
-  //    Adding support for rho_as_tensor in the svmregressor.cc
+  //    Adding support for new list of doubles rho and support_vectors in the svmregressor.cc
 
 
   ORT_THROW_IF_ERROR(info.GetAttrs<float>("coefficients", coefficients_));
