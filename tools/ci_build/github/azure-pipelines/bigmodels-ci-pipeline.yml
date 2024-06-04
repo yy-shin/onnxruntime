@@ -302,6 +302,11 @@ stages:
       displayName: 'Clean Agent Directories'
       condition: always()
 
+    - script: |
+        df -h
+        ls /mnt
+      displayName: 'Check Disk'
+
     - checkout: self
       clean: true
       submodules: none
