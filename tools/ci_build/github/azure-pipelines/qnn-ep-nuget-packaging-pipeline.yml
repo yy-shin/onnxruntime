@@ -8,7 +8,7 @@ parameters:
   displayName: Build Configuration
   type: string
   default: 'Release'
-  
+
 - name: IsReleaseBuild
   displayName: Is a release build? Set it to true if you are doing an Onnx Runtime release.
   type: boolean
@@ -44,13 +44,13 @@ jobs:
 
       - task: NuGetAuthenticate@0
         inputs:
-          forceReinstallCredentialProvider: true  
+          forceReinstallCredentialProvider: true
 
       - task: UsePythonVersion@0
         inputs:
           versionSpec: '3.8'
           addToPath: true
-      
+
       - template: templates/jobs/download_win_qnn_sdk.yml
         parameters:
           QnnSDKVersion: ${{ parameters.QnnSdk }}
@@ -90,7 +90,7 @@ jobs:
         inputs:
           artifactName: 'drop-winnuget-x64'
           targetPath: '$(Build.ArtifactStagingDirectory)/x64'
-          
+
   - job: OnnxRuntime_QNNNuget_Win_Arm64
     timeoutInMinutes: 120
 
@@ -108,7 +108,7 @@ jobs:
 
       - task: NuGetAuthenticate@0
         inputs:
-          forceReinstallCredentialProvider: true  
+          forceReinstallCredentialProvider: true
 
       - template: templates/jobs/download_win_qnn_sdk.yml
         parameters:
@@ -196,7 +196,7 @@ jobs:
         inputs:
           artifactName: 'drop-winnuget-arm64'
           targetPath: '$(Build.ArtifactStagingDirectory)/arm64'
-          
+
   - job: NuGet_Packaging_QNN
     workspace:
       clean: all
@@ -212,13 +212,13 @@ jobs:
         inputs:
           artifactName: 'drop-winnuget-x64'
           targetPath: '$(Build.BinariesDirectory)/nuget-artifact-x64'
-          
+
       - task: DownloadPipelineArtifact@0
         displayName: 'Download Pipeline Artifact - QNN NuGet arm64'
         inputs:
           artifactName: 'drop-winnuget-arm64'
           targetPath: '$(Build.BinariesDirectory)/nuget-artifact-arm64'
-      
+
       - task: PowerShell@2
         displayName: 'Bundle NuGet'
         inputs:
@@ -281,4 +281,3 @@ jobs:
         inputs:
           artifactName: 'drop-winnuget'
           targetPath: '$(Build.ArtifactStagingDirectory)/merged'
-
