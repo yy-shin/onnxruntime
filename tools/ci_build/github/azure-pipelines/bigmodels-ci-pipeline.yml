@@ -310,7 +310,7 @@ stages:
         ls -l /dev/nvme*n1
 
         # Enumerate unmounted NVMe direct disks
-        devices=$(lsblk -p -o NAME,TYPE,MOUNTPOINT | grep "nvme" | awk '$2 == "disk" && $3 == "" {print $1}')
+        devices=$( lsblk -p -o NAME,TYPE,MOUNTPOINT | grep "nvme")
         nvme_direct_disks=()
         for device in $devices
         do
