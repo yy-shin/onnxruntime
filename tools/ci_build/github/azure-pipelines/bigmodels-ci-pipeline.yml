@@ -303,10 +303,23 @@ stages:
       condition: always()
 
     - script: |
+        set -ex
         df -h
         ls /mnt
         echo "space"
         ls -l /dev/nvme*n1
+
+        # Enumerate unmounted NVMe direct disks
+        devices=$(lsblk -p -o NAME,TYPE,MOUNTPOINT | grep "nvme" | awk '$2 == "disk" && $3 == "" {print $1}')
+        nvme_direct_disks=()
+        for device in $devices
+        do
+            if nvme id-ctrl "$device" | grep -q "Microsoft NVMe Direct Disk"; then
+                nvme_direct_disks+=("$device")
+            fi
+        done
+        nvme_direct_disk_count=${#nvme_direct_disks[@]}
+        printf "Found $nvme_direct_disk_count NVMe Direct Disks\n"
       displayName: 'Check Disk'
 
     - checkout: self
