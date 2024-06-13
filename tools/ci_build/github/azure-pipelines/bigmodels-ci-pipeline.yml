@@ -305,8 +305,8 @@ stages:
     - script: |
         df -h
         ls /mnt
-        ls /dev/nvme*n1
-        ls -latr /dev/nvme*n1 | wc -l
+        echo "space"
+        ls -l /dev/nvme*n1
       displayName: 'Check Disk'
 
     - checkout: self
