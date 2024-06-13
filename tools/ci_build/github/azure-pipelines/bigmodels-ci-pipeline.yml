@@ -305,6 +305,7 @@ stages:
     - script: |
         set -ex
         df -h
+        cat /etc/fstab
         ls /mnt
         echo "space"
         ls -l /dev/nvme*n1
