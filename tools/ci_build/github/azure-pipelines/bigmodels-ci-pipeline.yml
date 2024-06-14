@@ -302,6 +302,10 @@ stages:
       displayName: 'Clean Agent Directories'
       condition: always()
 
+    - checkout: self
+      clean: true
+      submodules: none
+
     - script: |
         set -ex
         df -h
@@ -309,10 +313,6 @@ stages:
         echo ------------
         blkid
       displayName: 'Check Disk'
-
-    - checkout: self
-      clean: true
-      submodules: none
 
     - template: templates/flex-downloadPipelineArtifact.yml
       parameters:
