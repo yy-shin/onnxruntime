@@ -305,7 +305,7 @@ stages:
     - script: |
         set -ex
         df -h
-        sudo bash tools/ci_build/github/linux/linux-mount-nvme.sh
+        sudo bash $(Build.SourcesDirectory)/tools/ci_build/github/linux/linux-mount-nvme.sh
         echo ------------
         blkid
       displayName: 'Check Disk'
