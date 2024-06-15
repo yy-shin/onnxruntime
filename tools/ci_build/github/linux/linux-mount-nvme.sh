@@ -25,13 +25,4 @@ fi
 chmod 1777 $MOUNT_POINT
 
 df -h
-cat /etc/fstab
-blkid
-
-NVME_UUID=$(blkid | grep "/dev/md128" | grep -o 'UUID="[a-f0-9-]\+"' | head -n 1 | awk -F'=' '{print $2}' | tr -d '"')
-echo "UUID=$NVME_UUID  $MOUNT_POINT   xfs   defaults,nofail   0   2" >> /etc/fstab
-
-cat /etc/fstab
-
-df -h
 exit 0
