@@ -310,6 +310,7 @@ stages:
         set -ex
         df -h
         sudo bash $(Build.SourcesDirectory)/tools/ci_build/github/linux/linux-mount-nvme.sh
+        sudo df -h
         df -h
       displayName: 'Check Disk'
 
