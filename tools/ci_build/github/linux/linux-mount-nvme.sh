@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 # reference: https://techcommunity.microsoft.com/t5/azure-high-performance-computing/getting-started-with-the-nc-a100-v4-series/ba-p/3568843
 
 set -ex
@@ -18,6 +18,7 @@ else
     # mdadm  --stop /dev/md*
     mdadm --create /dev/md128 -f --run --level 0 --raid-devices $NVME_DISKS $NVME_DISKS_NAME
     mkfs.xfs -f /dev/md128
+    mkdir -p $MOUNT_POINT
     mount /dev/md128 $MOUNT_POINT
 fi
 
@@ -32,4 +33,5 @@ echo "UUID=$NVME_UUID  $MOUNT_POINT   xfs   defaults,nofail   0   2" >> /etc/fst
 
 cat /etc/fstab
 
+df -h
 exit 0

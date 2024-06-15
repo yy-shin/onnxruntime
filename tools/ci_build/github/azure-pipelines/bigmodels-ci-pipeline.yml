@@ -310,16 +310,13 @@ stages:
         set -ex
         df -h
         sudo bash $(Build.SourcesDirectory)/tools/ci_build/github/linux/linux-mount-nvme.sh
-        echo ------------
-        blkid
-        df -h
       displayName: 'Check Disk'
 
     - template: templates/flex-downloadPipelineArtifact.yml
       parameters:
         StepName: 'Download Onnxruntime Artifact'
         ArtifactName: 'drop-ort-linux-gpu'
-        TargetPath: '$(Build.BinariesDirectory)/ort-artifact/'
+        TargetPath: '/nvme_disk/ort-artifact/'
         SpecificArtifact: ${{ parameters.specificArtifact }}
         BuildId: ${{ parameters.BuildId }}
 
