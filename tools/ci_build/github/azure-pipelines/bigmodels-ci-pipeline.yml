@@ -310,7 +310,13 @@ stages:
         set -ex
         df -h
         sudo bash $(Build.SourcesDirectory)/tools/ci_build/github/linux/linux-mount-nvme.sh
+        df -h
       displayName: 'Check Disk'
+
+    - script: |
+        mkdir -p /nvme_disk/ort-artifact/
+        df -h
+      displayName: 'Check Disk 1'
 
     - template: templates/flex-downloadPipelineArtifact.yml
       parameters:
