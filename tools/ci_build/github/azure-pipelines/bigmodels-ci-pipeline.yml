@@ -297,26 +297,23 @@ stages:
     workspace:
       clean: all
     pool: zhanyi_test_A100_pool
+    demands:
+      - WorkFolder -equals /mnt/storage/
     steps:
     - task: mspremier.PostBuildCleanup.PostBuildCleanup-task.PostBuildCleanup@3
       displayName: 'Clean Agent Directories'
       condition: always()
-
-    - checkout: self
-      clean: true
-      submodules: none
-
-    - script: |
-        set -ex
-        df -h
-      displayName: 'Check Disk'
 
     - script: |
         set -ex
         sudo chmod -R 777 /mnt/storage
         mkdir -p /mnt/storage/ort-artifact/
         df -h
-      displayName: 'Check Disk 1'
+      displayName: 'Check Disk'
+
+    - checkout: self
+      clean: true
+      submodules: none
 
     - template: templates/flex-downloadPipelineArtifact.yml
       parameters:
