@@ -296,8 +296,9 @@ stages:
       skipComponentGovernanceDetection: true
     workspace:
       clean: all
-    pool: zhanyi_test_A100_pool
-    demands:
+    pool:
+      name: zhanyi_test_A100_pool
+      demands:
       - WorkFolder -equals /mnt/storage/
     steps:
     - task: mspremier.PostBuildCleanup.PostBuildCleanup-task.PostBuildCleanup@3
