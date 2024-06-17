@@ -312,6 +312,8 @@ stages:
       displayName: 'Check Disk'
 
     - script: |
+        set -ex
+        sudo chmod -R 777 /mnt/storage
         mkdir -p /mnt/storage/ort-artifact/
         df -h
       displayName: 'Check Disk 1'
