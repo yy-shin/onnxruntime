@@ -309,13 +309,10 @@ stages:
     - script: |
         set -ex
         df -h
-        sudo bash $(Build.SourcesDirectory)/tools/ci_build/github/linux/linux-mount-nvme.sh
-        sudo df -h
-        df -h
       displayName: 'Check Disk'
 
     - script: |
-        mkdir -p /nvme_disk/ort-artifact/
+        mkdir -p /mnt/storage/ort-artifact/
         df -h
       displayName: 'Check Disk 1'
 
@@ -323,7 +320,7 @@ stages:
       parameters:
         StepName: 'Download Onnxruntime Artifact'
         ArtifactName: 'drop-ort-linux-gpu'
-        TargetPath: '/nvme_disk/ort-artifact/'
+        TargetPath: '/mnt/storage/'
         SpecificArtifact: ${{ parameters.specificArtifact }}
         BuildId: ${{ parameters.BuildId }}
 
@@ -347,17 +344,17 @@ stages:
         feed: '/7424c8e4-5c62-490e-95c4-79446f31017c'
         version: 1.0.0
         definition: '6fe0c4ed-9d0e-4d66-94cc-fb6a111d02a5'
-        downloadPath: /nvme_disk/meta_llama2_7b_hf
+        downloadPath: /mnt/storage/meta_llama2_7b_hf
 
     - script: |
         df -h
-        ls /mnt
+        ls /mnt/storage
       displayName: 'Check Disk'
 
     - script: |
         docker run --rm --gpus all -v $(Build.SourcesDirectory):/workspace \
            -v $(Build.BinariesDirectory)/ort-artifact/:/ort-artifact \
-           -v /nvme_disk/meta_llama2_7b_hf:/meta-llama2 \
+           -v /mnt/storage/meta_llama2_7b_hf:/meta-llama2 \
            onnxruntimeubi8packagestest \
             bash -c "
               set -ex; \
