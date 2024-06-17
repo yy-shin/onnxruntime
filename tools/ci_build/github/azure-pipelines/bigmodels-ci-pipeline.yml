@@ -320,7 +320,7 @@ stages:
       parameters:
         StepName: 'Download Onnxruntime Artifact'
         ArtifactName: 'drop-ort-linux-gpu'
-        TargetPath: '/mnt/storage/'
+        TargetPath: '/mnt/storage/ort-artifact/'
         SpecificArtifact: ${{ parameters.specificArtifact }}
         BuildId: ${{ parameters.BuildId }}
 
