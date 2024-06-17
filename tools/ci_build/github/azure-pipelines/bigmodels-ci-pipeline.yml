@@ -313,7 +313,7 @@ stages:
 
     - script: |
         set -ex
-        sudo chmod -R 755 /mnt/storage
+        sudo chmod -R +rw /mnt/storage
         mkdir -p /mnt/storage/ort-artifact/
         df -h
       displayName: 'Check Disk 1'
