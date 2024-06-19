@@ -102,7 +102,7 @@ For example, to build a CUDA GPU package, just run:
   --build_nuget \
   --msbuild_extra_options \
     /p:SelectedTargets=Net6 \
-    /p:Net6Targets=net8.0 \
+    /p:Net6Targets=net7.0 \
     /p:TargetFrameworks=netstandard2.0 \
     /p:IsLinuxBuild=true
 ```
