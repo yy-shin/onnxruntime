@@ -388,6 +388,10 @@ stages:
           dotnet workload install android ios maccatalyst
         workingDirectory: '$(Build.SourcesDirectory)\csharp'
 
+    - script: |
+        dotnet --list-sdks
+      displayName: 'check dotnet sdks'
+
     - task: MSBuild@1
       displayName: 'Restore NuGet Packages and create project.assets.json'
       inputs:
