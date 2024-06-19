@@ -390,6 +390,7 @@ stages:
 
     - script: |
         dotnet --list-sdks
+        dir C:\Program Files (x86)\Android\android-sdk\platforms
       displayName: 'check dotnet sdks'
 
     - task: MSBuild@1
