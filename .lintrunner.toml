@@ -77,6 +77,7 @@ exclude_patterns = [
     'cmake/**',
     'orttraining/*',
     'onnxruntime/core/flatbuffers/**',
+    'onnxruntime/test/flatbuffers/**',
     'orttraining/orttraining/python/training/optim/_ds_code_store.py',
 ]
 command = [

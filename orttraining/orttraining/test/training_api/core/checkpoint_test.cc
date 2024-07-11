@@ -51,7 +51,7 @@ TEST(CheckpointApiTest, SaveOnnxModelAsCheckpoint_ThenLoad_CPU) {
 
   // Model path and trainable parameter name definitions.
   auto model_uri = MODEL_FOLDER "transform/computation_reduction/gathernd/e2e.onnx";
-  std::vector<std::string> expected_trainable_param_names{
+  constexpr std::array<std::string_view> expected_trainable_param_names{
       "bert.encoder.layer.2.output.LayerNorm.weight",
       "bert.encoder.layer.2.output.LayerNorm.bias",
       "add1_initializerr",
@@ -150,7 +150,7 @@ TEST(CheckpointApiTest, SaveOnnxModelAsCheckpointThenLoadFromBufferCPU) {
 
   // Model path and trainable parameter name definitions.
   auto model_uri = MODEL_FOLDER "transform/computation_reduction/gathernd/e2e.onnx";
-  std::vector<std::string> expected_trainable_param_names{
+  constexpr std::array<std::string_view> expected_trainable_param_names{
       "bert.encoder.layer.2.output.LayerNorm.weight",
       "bert.encoder.layer.2.output.LayerNorm.bias",
       "add1_initializerr",
@@ -482,7 +482,7 @@ TEST(CheckpointApiTest, SaveOnnxModelAsCheckpoint_ThenLoad_WithExternalData) {
 
   // Model path and trainable parameter name definitions.
   auto model_uri = MODEL_FOLDER "transform/computation_reduction/gathernd/e2e.onnx";
-  std::vector<std::string> expected_trainable_param_names{
+  constexpr std::array<std::string_view> expected_trainable_param_names{
       "bert.encoder.layer.2.output.LayerNorm.weight",
       "bert.encoder.layer.2.output.LayerNorm.bias",
       "add1_initializerr",
