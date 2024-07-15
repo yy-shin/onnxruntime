@@ -132,13 +132,15 @@ InlinedVector<std::unique_ptr<RewriteRule>> GenerateRewriteRules(
       rules.push_back(std::make_unique<ConvBNFusion>());
       rules.push_back(std::make_unique<PadFusion>());
       rules.push_back(std::make_unique<MatmulBNFusion>());
-      rules.push_back(std::make_unique<ClipQuantFusion>());
-      rules.push_back(std::make_unique<ReluQuantFusion>());
+      //rules.push_back(std::make_unique<ClipQuantFusion>());
+      //rules.push_back(std::make_unique<ReluQuantFusion>());
       rules.push_back(std::make_unique<LabelEncoderFusion>());
       break;
 
     case TransformerLevel::Level2:
       // No level2 rules available today
+      rules.push_back(std::make_unique<ClipQuantFusion>());
+      rules.push_back(std::make_unique<ReluQuantFusion>());
       break;
 
     case TransformerLevel::Level3:
