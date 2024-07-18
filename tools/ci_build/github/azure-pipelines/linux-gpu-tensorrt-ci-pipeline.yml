@@ -34,6 +34,10 @@ parameters:
     values:
       - 11.8
       - 12.2
+  - name: UseTensorrtOssParser
+    displayName: Use TensorRT-OSS Parser
+    type: boolean
+    default: false
 
 variables:
   - name: docker_base_image
@@ -46,6 +50,12 @@ variables:
       value: 10.2.0.19-1.cuda11.8
     ${{ if eq(parameters.CudaVersion, '12.2') }}:
       value: 10.2.0.19-1.cuda12.5
+  - name: parser
+    ${{ if eq(parameters.UseTensorrtOssParser, true) }}:
+      value: "--use_tensorrt_oss_parser"
+    ${{ if eq(parameters.UseTensorrtOssParser, false) }}:
+      value: ""
+
 
 jobs:
 - job: Linux_Build
@@ -100,7 +110,7 @@ jobs:
                   -e NIGHTLY_BUILD \
                   -e BUILD_BUILDNUMBER \
                   -e CCACHE_DIR=/cache -w /onnxruntime_src \
-                  onnxruntimetensorrt86gpubuild tools/ci_build/github/linux/build_tensorrt_ci.sh
+                  onnxruntimetensorrt86gpubuild tools/ci_build/github/linux/build_tensorrt_ci.sh ${{ variables.parser }}
             workingDirectory: $(Build.SourcesDirectory)
 
   - template: templates/explicitly-defined-final-tasks.yml
