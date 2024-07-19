@@ -38,7 +38,7 @@ mp11;https://github.com/boostorg/mp11/archive/refs/tags/boost-1.82.0.zip;9bc9e01
 neural_speed;https://github.com/intel/neural-speed/archive/refs/tags/v0.3.zip;5ec64e3071edc7347ebd8a81679cf06e2bb9b851
 onnx;https://github.com/onnx/onnx/archive/refs/tags/v1.16.1.zip;2eb9198bb352757d5ff13977cbe0634898e0837c
 #use the latest commit of 10.2-GA
-onnx_tensorrt;https://github.com/onnx/onnx-tensorrt/archive/706f02e74366b2cbaacf87be61de95df051a2788.zip;d716e94fe9df25916e381b5400de2f06d82c691f
+onnx_tensorrt;https://github.com/onnx/onnx-tensorrt/archive/96e781103cfc4adf4a6bb557e94bac8e693f6f4c.zip;5207337c4cceaf217b4c9e4911c4e19f3144b65a
 protobuf;https://github.com/protocolbuffers/protobuf/archive/refs/tags/v21.12.zip;7cf2733949036c7d52fda017badcab093fe73bfa
 protoc_win64;https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-win64.zip;b4521f7ada5b260380f94c4bd7f1b7684c76969a
 protoc_win32;https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-win32.zip;3688010318192c46ce73213cdfb6b3e5656da874
