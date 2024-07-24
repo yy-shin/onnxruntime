@@ -28,7 +28,7 @@ RUN apt-get install -y --no-install-recommends \
     ln -s /usr/bin/pip3 pip;
 
 RUN pip install --upgrade pip 
-RUN pip install setuptools>=68.2.2 psutil
+RUN pip install setuptools>=68.2.2 psutil flatbuffers packaging setuptools numpy
 
 # Install TensorRT
 RUN version="10.2.0.19-1+cuda12.5" &&\
