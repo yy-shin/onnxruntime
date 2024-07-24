@@ -48,7 +48,6 @@ def get_common_docker_build_args(args: argparse.Namespace) -> List[str]:
     """
 
     command = [
-        "--no-cache",
         "-t",
         f"{args.image_name}",
         "--build-arg",
