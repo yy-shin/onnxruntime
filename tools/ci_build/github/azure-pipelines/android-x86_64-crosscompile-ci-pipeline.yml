@@ -174,10 +174,10 @@ stages:
 
     - template: templates/clean-agent-build-directory-step.yml
 
-- stage: MASTER_BUILD_STAGE
-  # The below jobs only run on master build.
+- stage: MAIN_BUILD_STAGE
+  # The below jobs only run on build of main branch.
   # because coverage report is hard to support in cross machines.
-  displayName: NNAPI MASTER BUILD&TEST
+  displayName: NNAPI MAIN BUILD&TEST
   dependsOn: []
   condition: in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI')
   jobs:
@@ -226,10 +226,9 @@ stages:
         displayName: NNAPI EP, Build, Test, CodeCoverage on Android Emulator
 
       - script: |
-          python3 -m pip install gcovr && \
-          python3 tools/ci_build/coverage.py \
-            --build_dir build_nnapi \
-            --android_sdk_path $ANDROID_HOME
+          export GCOV="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-cov gcov"
+          python3 -m pip install gcovr
+          python3 tools/ci_build/coverage.py --build_dir build_nnapi --android_sdk_path $ANDROID_HOME
         displayName: Retrieve runtime code coverage files from the emulator and analyze
 
       - script: cat '$(Build.SourcesDirectory)/build_nnapi/Debug/coverage_rpt.txt'
@@ -239,14 +238,22 @@ stages:
         # Build Minimal ORT with NNAPI and reduced Ops, run unit tests on Android Emulator
         displayName: Build Minimal ORT with NNAPI and run tests
 
-      - task: AzureCLI@2
-        displayName: 'Post Android Code Coverage To DashBoard'
+      # Publish the report so devs can check the numbers
+      - task: PublishPipelineArtifact@0
+        displayName: 'Publish code coverage report'
         inputs:
-          azureSubscription: AIInfraBuild
-          scriptType: bash
-          scriptPath: $(Build.SourcesDirectory)/tools/ci_build/github/linux/upload_code_coverage_data.sh
-          arguments: '"$(Build.SourcesDirectory)/build_nnapi/Debug/coverage_rpt.txt" "https://dev.azure.com/onnxruntime/onnxruntime/_build/results?buildId=$(Build.BuildId)" arm android nnapi'
-          workingDirectory: '$(Build.BinariesDirectory)'
+            artifactName: "coverage_rpt.txt"
+            targetPath: '$(Build.SourcesDirectory)/build_nnapi/Debug/coverage_rpt.txt'
+            publishLocation: 'pipeline'
+
+      # - task: AzureCLI@2
+      #   displayName: 'Post Android Code Coverage To DashBoard'
+      #   inputs:
+      #     azureSubscription: AIInfraBuild
+      #     scriptType: bash
+      #     scriptPath: $(Build.SourcesDirectory)/tools/ci_build/github/linux/upload_code_coverage_data.sh
+      #     arguments: '"$(Build.SourcesDirectory)/build_nnapi/Debug/coverage_rpt.txt" "https://dev.azure.com/onnxruntime/onnxruntime/_build/results?buildId=$(Build.BuildId)" arm android nnapi'
+      #     workingDirectory: '$(Build.BinariesDirectory)'
 
       - template: templates/use-android-emulator.yml
         parameters:
