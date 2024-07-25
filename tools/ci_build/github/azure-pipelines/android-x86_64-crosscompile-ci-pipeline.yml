@@ -225,6 +225,7 @@ stages:
           --code_coverage
         displayName: NNAPI EP, Build, Test, CodeCoverage on Android Emulator
 
+      # We need to use llvm-cov from the NDK.
       - script: |
           export GCOV="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-cov gcov"
           python3 -m pip install gcovr
@@ -234,18 +235,6 @@ stages:
       - script: cat '$(Build.SourcesDirectory)/build_nnapi/Debug/coverage_rpt.txt'
         displayName: Print coverage report
 
-      - script: /bin/bash tools/ci_build/github/linux/ort_minimal/nnapi_minimal_build_minimal_ort_and_run_tests.sh $(pwd)
-        # Build Minimal ORT with NNAPI and reduced Ops, run unit tests on Android Emulator
-        displayName: Build Minimal ORT with NNAPI and run tests
-
-      # Publish the report so devs can check the numbers
-      - task: PublishPipelineArtifact@0
-        displayName: 'Publish code coverage report'
-        inputs:
-            artifactName: "coverage_rpt.txt"
-            targetPath: '$(Build.SourcesDirectory)/build_nnapi/Debug/coverage_rpt.txt'
-            publishLocation: 'pipeline'
-
       # - task: AzureCLI@2
       #   displayName: 'Post Android Code Coverage To DashBoard'
       #   inputs:
@@ -254,6 +243,10 @@ stages:
       #     scriptPath: $(Build.SourcesDirectory)/tools/ci_build/github/linux/upload_code_coverage_data.sh
       #     arguments: '"$(Build.SourcesDirectory)/build_nnapi/Debug/coverage_rpt.txt" "https://dev.azure.com/onnxruntime/onnxruntime/_build/results?buildId=$(Build.BuildId)" arm android nnapi'
       #     workingDirectory: '$(Build.BinariesDirectory)'
+
+      - script: /bin/bash tools/ci_build/github/linux/ort_minimal/nnapi_minimal_build_minimal_ort_and_run_tests.sh $(pwd)
+        # Build Minimal ORT with NNAPI and reduced Ops, run unit tests on Android Emulator
+        displayName: Build Minimal ORT with NNAPI and run tests
 
       - template: templates/use-android-emulator.yml
         parameters:
