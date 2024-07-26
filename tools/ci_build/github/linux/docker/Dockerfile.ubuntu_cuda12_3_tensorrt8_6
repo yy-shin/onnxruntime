@@ -28,7 +28,7 @@ RUN apt-get install -y --no-install-recommends \
     ln -s /usr/bin/pip3 pip;
 
 RUN pip install --upgrade pip 
-RUN pip install setuptools>=68.2.2
+RUN pip install psutil setuptools>=68.2.2 flatbuffers packaging setuptools numpy
 
 # Install cuDNN v9
 RUN apt-get -y install cudnn9-cuda-12
