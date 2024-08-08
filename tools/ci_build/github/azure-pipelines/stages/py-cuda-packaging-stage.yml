@@ -55,7 +55,7 @@ parameters:
     - '3.12'
 
 variables:
-  - template: templates/common-variables.yml
+  - template: ../templates/common-variables.yml
   - name: win_trt_folder
     ${{ if eq(parameters.cuda_version, '11.8') }}:
       value: ${{ variables.win_trt_folder_cuda11 }}

@@ -12,7 +12,7 @@ parameters:
   CudaVersion: '11.8'
 
 variables:
-  - template: templates/common-variables.yml
+  - template: ../../templates/common-variables.yml
   - name: trt_cuda_version
     ${{ if eq(parameters.CudaVersion, '11.8') }}:
       value: ${{ variables.trt_cuda11_version }}

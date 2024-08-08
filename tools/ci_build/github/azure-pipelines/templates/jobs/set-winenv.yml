@@ -15,7 +15,7 @@ parameters:
     default: '11.8'
 
 variables:
-  - template: templates/common-variables.yml
+  - template: ../common-variables.yml
   - name: trt_folder_cu11
     value: ${{ variables.win_trt_folder_cuda11 }}
   - name: trt_folder_cu12
