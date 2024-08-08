@@ -27,14 +27,6 @@ parameters:
    - 11.8
    - 12.2
 
-variables:
-  - template: templates/common-variables.yml
-  - name: trt_version
-    ${{ if eq(parameters.cuda_version, '11.8') }}:
-      value: ${{ variables.linux_trt_version_cuda11 }}
-    ${{ if eq(parameters.cuda_version, '12.2') }}:
-      value: ${{ variables.linux_trt_version_cuda12 }}
-
 stages:
 - stage: Linux_py_GPU_Wheels_${{ parameters.arch }}
   dependsOn: []
@@ -45,6 +37,12 @@ stages:
       clean: all
     pool: ${{ parameters.machine_pool }}
     variables:
+      - template: common-variables.yml
+      - name: trt_version
+        ${{ if eq(parameters.cuda_version, '11.8') }}:
+          value: ${{ variables.linux_trt_version_cuda11 }}
+        ${{ if eq(parameters.cuda_version, '12.2') }}:
+          value: ${{ variables.linux_trt_version_cuda12 }}
       # The build machine pool doesn't have dotnet, so it can't run CG.
       - name: skipComponentGovernanceDetection
         value: true
@@ -53,6 +51,7 @@ stages:
           value: -x ${{ parameters.extra_build_arg }}
         ${{ if eq(parameters.extra_build_arg, '') }}:
           value: ''
+  
     steps:
       - checkout: self
         clean: true
