@@ -68,7 +68,7 @@ parameters:
 variables:
 - template: common-variables.yml
 - name: cuda_version
-  value: 11.8
+  value: ${{ variables.trt_cuda11_version }}
 - name: linux_trt_version
   value: ${{ variables.linux_trt_version_cuda11 }}
 - name: win_trt_folder
