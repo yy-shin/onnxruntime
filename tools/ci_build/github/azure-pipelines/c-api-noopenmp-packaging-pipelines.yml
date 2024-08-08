@@ -77,15 +77,16 @@ resources:
     ref: 5eda9aded5462201e6310105728d33016e637ea7
 
 variables:
+- template: templates/common-variables.yml
 - name: ReleaseVersionSuffix
   value: ''
 - name: win_trt_version
-  value: 11.8
+  value: ${{ variables.cuda11_version }}
 
 - name: win_trt_home
-  value: $(Agent.TempDirectory)\TensorRT-10.3.0.26.Windows10.x86_64.cuda-11.8
+  value: $(Agent.TempDirectory)\${{ variables.win_trt_folder_cuda11 }}
 - name: win_cuda_home
-  value: $(Agent.TempDirectory)\v11.8
+  value: $(Agent.TempDirectory)\v${{ variables.cuda11_version }}
 
 stages:
 - template: stages/set_packaging_variables_stage.yml

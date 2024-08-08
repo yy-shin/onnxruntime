@@ -135,13 +135,14 @@ stages:
       clean: all
     pool: 'Onnxruntime-Linux-GPU'
     variables:
+    - template: ../templates/common-variables.yml
     - name: runCodesignValidationInjection
       value: false
     - name: docker_base_image
       ${{ if eq(parameters.CudaVersion, '11.8') }}:
-        value: onnxruntimebuildcache.azurecr.io/internal/azureml/onnxruntime/build/cuda11_x64_almalinux8_gcc11:20240531.1
+        value: ${{ variables.cuda11_img }}
       ${{ if eq(parameters.CudaVersion, '12.2') }}:
-        value: onnxruntimebuildcache.azurecr.io/internal/azureml/onnxruntime/build/cuda12_x64_ubi8_gcc12:20240719.1
+        value: ${{ variables.cuda12_img }}
     timeoutInMinutes: 60
 
     steps:

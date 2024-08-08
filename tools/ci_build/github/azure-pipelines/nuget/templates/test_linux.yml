@@ -10,6 +10,17 @@ parameters:
   CustomOpArtifactName: 'onnxruntime-linux-x64'
   BuildId: '0'
   CudaVersion: '11.8'
+
+variables:
+  - template: templates/common-variables.yml
+  - name: trt_cuda_version
+    ${{ if eq(parameters.CudaVersion, '11.8') }}:
+      value: ${{ variables.trt_cuda11_version }}
+    ${{ if eq(parameters.CudaVersion, '12.2') }}:
+      value: ${{ variables.trt_cuda12_version }}
+  - name: trt_version
+    value: ${{ variables.common_trt_version }}
+
 stages:
 - stage: NuGet_Test_Linux_${{ parameters.StageSuffix }}${{ parameters.MoreSuffix }}
   dependsOn:
@@ -61,7 +72,7 @@ stages:
           ${{ if eq(parameters.CudaVersion, '12.2') }}:
             DockerBuildArgs: "
             --build-arg BASEIMAGE=nvidia/cuda:12.2.2-devel-ubuntu20.04
-            --build-arg TRT_VERSION=10.3.0.26-1+cuda12.5
+            --build-arg TRT_VERSION=${{ variables.trt_version }}-1+cuda${{ variables.trt_cuda_version }}
             --build-arg BUILD_UID=$( id -u )
             "
           ${{ else }}:
