@@ -510,7 +510,6 @@ stages:
           docker_base_image: ${{ variables.linux_image }}
           extra_build_arg: ${{ parameters.build_py_parameters }}
           cmake_build_type: ${{ parameters.cmake_build_type }}
-          trt_version: '${{ variables.linux_trt_version }}'
           cuda_version: ${{ variables.cuda_version }}
 
   - ${{ if eq(parameters.enable_windows_arm64_qnn, true) }}:
