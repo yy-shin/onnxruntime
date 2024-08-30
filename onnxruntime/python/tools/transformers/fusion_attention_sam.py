@@ -159,7 +159,6 @@ class FusionAttentionSam(Fusion):
             vals=kv_bias,
         )
 
-
     def create_attention_node(
         self,
         q_matmul: NodeProto,
@@ -510,13 +509,16 @@ class FusionAttentionSam(Fusion):
             return None
 
         q_nodes = self.model.match_parent_path(
-            matmul_qk, ["Mul", "Transpose", "Reshape", "Add", "MatMul"], [0, None, 0, 0, None])
+            matmul_qk, ["Mul", "Transpose", "Reshape", "Add", "MatMul"], [0, None, 0, 0, None]
+        )
         if q_nodes is None:
             logger.debug("fuse_attention: failed to match q path")
             return None
         (mul_q, _transpose_q, reshape_q, add_q, matmul_q) = q_nodes
 
-        k_nodes = self.model.match_parent_path(matmul_qk, ["Mul", "Transpose", "Reshape", "Add", "MatMul"], [1, None, 0, 0, None])
+        k_nodes = self.model.match_parent_path(
+            matmul_qk, ["Mul", "Transpose", "Reshape", "Add", "MatMul"], [1, None, 0, 0, None]
+        )
         if k_nodes is None:
             logger.debug("fuse_attention: failed to match k path")
             return None
@@ -533,4 +535,4 @@ class FusionAttentionSam(Fusion):
             logger.debug("fuse_attention: failed to match mul_q path")
             return None
 
-        return  reshape_qkv, transpose_qkv, reshape_q, matmul_q, add_q, matmul_k, add_k, matmul_v, add_v
+        return reshape_qkv, transpose_qkv, reshape_q, matmul_q, add_q, matmul_k, add_k, matmul_v, add_v

@@ -90,7 +90,7 @@ class SamOnnxModel(BertOnnxModel):
 
     def fuse_multi_head_attention(self, options: Optional[FusionOptions] = None):
         # Self Attention
-        enable_packed_qkv = False # (options is None) or options.enable_packed_qkv
+        enable_packed_qkv = False  # (options is None) or options.enable_packed_qkv
         self_attention_fusion = FusionAttentionSam(
             self,
             self.hidden_size,
@@ -102,7 +102,7 @@ class SamOnnxModel(BertOnnxModel):
         self_attention_fusion.apply()
 
         # Cross Attention
-        enable_packed_kv = False # (options is None) or options.enable_packed_kv
+        enable_packed_kv = False  # (options is None) or options.enable_packed_kv
         cross_attention_fusion = FusionAttentionSam(
             self,
             self.hidden_size,
