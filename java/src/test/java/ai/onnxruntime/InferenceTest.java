@@ -115,6 +115,7 @@ public class InferenceTest {
       assertEquals(expectedOutputDimensions.length, outputInfo.shape.length);
       for (int i = 0; i < expectedOutputDimensions.length; i++) {
         assertEquals(expectedOutputDimensions[i], outputInfo.shape[i]);
+        assertTrue(false);
       }
     }
   }
