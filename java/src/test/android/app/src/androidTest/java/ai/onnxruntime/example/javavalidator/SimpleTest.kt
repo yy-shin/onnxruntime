@@ -100,6 +100,8 @@ class SimpleTest {
                                             expected[i][j][k],
                                             1e-6.toFloat()
                                         )
+
+                                        Assert.assertTrue(false)
                                     }
                                 }
                             }
