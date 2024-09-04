@@ -49,10 +49,10 @@ jobs:
 
   - template: install-appcenter.yml
 
-  - template: use-android-emulator.yml
-    parameters:
-      create: true
-      start: true
+#  - template: use-android-emulator.yml
+#    parameters:
+#      create: true
+#      start: true
 
   - script: |
       set -e -x
@@ -62,8 +62,8 @@ jobs:
       cd ./android
       mkdir -p app/libs
       cp $(Build.BinariesDirectory)/final-android-aar/${{parameters.packageName}}-$(OnnxRuntimeVersion).aar app/libs/onnxruntime-android.aar
-      $(Build.SourcesDirectory)/java/gradlew --no-daemon clean connectedDebugAndroidTest --stacktrace
-    displayName: Run E2E test using Emulator
+      # $(Build.SourcesDirectory)/java/gradlew --no-daemon clean connectedDebugAndroidTest --stacktrace
+    displayName: Move test files
     workingDirectory: $(Build.BinariesDirectory)
 
   - template: use-android-emulator.yml
