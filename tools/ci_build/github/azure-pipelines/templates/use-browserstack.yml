@@ -1,0 +1,12 @@
+steps:
+    - bash: apt-get install jq
+      displayName: Install jq to be able to query JSON
+    - bash: |
+        cd android_test/android
+        echo "##vso[task.setvariable variable=app_url]$(curl -u "$(carzh-browserstack-userid)" \
+        -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/app" \
+        -F "file=@app/build/outputs/apk/debug/app-debug.apk" | jq -r ".app_url")"
+      displayName: Echo App URL
+    - bash: |
+        echo "$(app_url)"
+      displayName: Check that variable was set correctly
