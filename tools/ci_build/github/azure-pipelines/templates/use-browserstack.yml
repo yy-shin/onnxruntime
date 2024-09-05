@@ -1,5 +1,5 @@
 steps:
-    - bash: apt-get install jq
+    - bash: sudo apt-get install jq -y
       displayName: Install jq to be able to query JSON
     - bash: |
         cd android_test/android
