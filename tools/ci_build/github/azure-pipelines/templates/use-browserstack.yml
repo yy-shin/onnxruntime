@@ -1,5 +1,7 @@
 steps:
     - script: |
+        sudo apt update
+        sudo apt install apt
         sudo apt-get update -y
         sudo apt-get install jq -y
       displayName: Install jq to be able to query JSON
