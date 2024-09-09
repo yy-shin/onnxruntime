@@ -1623,7 +1623,9 @@ class SymbolicShapeInference:
 
     def _infer_Reshape(self, node):  # noqa: N802
         shape_value = self._try_get_value(node, 1)
+        print(f"{shape_value=}")
         vi = self.known_vi_[node.output[0]]
+        print(f"{vi=}")
         if shape_value is None:
             shape_shape = self._get_shape(node, 1)
             assert len(shape_shape) == 1
@@ -1636,8 +1638,10 @@ class SymbolicShapeInference:
                     get_shape_from_sympy_shape(self._new_symbolic_shape(shape_rank, node)),
                 )
             )
+            print(f"updated {vi=}")
         else:
             input_sympy_shape = self._get_sympy_shape(node, 0)
+            print(f"{input_sympy_shape=}")
             total = 1
             for d in input_sympy_shape:
                 total = total * d
@@ -1661,7 +1665,7 @@ class SymbolicShapeInference:
             if -1 in new_sympy_shape:
                 new_dim = total // non_deferred_size
                 new_sympy_shape[deferred_dim_idx] = new_dim
-
+            print(f"{new_sympy_shape=}")
             self._update_computed_dims(new_sympy_shape)
             vi.CopyFrom(
                 helper.make_tensor_value_info(
@@ -1670,6 +1674,7 @@ class SymbolicShapeInference:
                     get_shape_from_sympy_shape(new_sympy_shape),
                 )
             )
+            print(f"updated {vi=}")
 
         self._pass_on_sympy_data(node)
 

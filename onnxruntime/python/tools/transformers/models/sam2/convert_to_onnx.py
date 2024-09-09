@@ -25,14 +25,16 @@ class SAM2ImageEncoder(nn.Module):
 
     def forward(self, x: torch.Tensor) -> tuple[Any, Any, Any]:
         backbone_out = self.image_encoder(x)
+
+        # precompute projected level 0 and level 1 features in SAM decoder
+        # to avoid running it again on every SAM click
         backbone_out["backbone_fpn"][0] = self.model.sam_mask_decoder.conv_s0(backbone_out["backbone_fpn"][0])
         backbone_out["backbone_fpn"][1] = self.model.sam_mask_decoder.conv_s1(backbone_out["backbone_fpn"][1])
 
+        # Prepare and flatten visual features.
         feature_maps = backbone_out["backbone_fpn"][-self.model.num_feature_levels :]
         vision_pos_embeds = backbone_out["vision_pos_enc"][-self.model.num_feature_levels :]
-
         feat_sizes = [(x.shape[-2], x.shape[-1]) for x in vision_pos_embeds]
-
         # flatten NxCxHxW to HWxNxC
         vision_feats = [x.flatten(2).permute(2, 0, 1) for x in feature_maps]
         vision_pos_embeds = [x.flatten(2).permute(2, 0, 1) for x in vision_pos_embeds]
@@ -44,6 +46,8 @@ class SAM2ImageEncoder(nn.Module):
             for feat, feat_size in zip(vision_feats[::-1], feat_sizes[::-1])
         ][::-1]
 
+        #image_embed = feats[-1]
+        #high_res_feats: feats[:-1]
         return feats[0], feats[1], feats[2]
 
 
@@ -65,8 +69,27 @@ class SAM2ImageDecoder(nn.Module):
         point_labels: torch.Tensor,
         mask_input: torch.Tensor,
         has_mask_input: torch.Tensor,
-        img_size: torch.Tensor,
+        image_size: torch.Tensor,
     ):
+        """_summary_
+
+        Args:
+            image_embed (torch.Tensor): image embedding from image encoder.
+            high_res_feats_0 (torch.Tensor): [1, 32, 256, 256]. high resolution features of level 0 from image encoder.
+            high_res_feats_1 (torch.Tensor): [1, 64, 128, 128]. high resolution features of level 1 from image encoder.
+            point_coords (torch.Tensor): [B, P, 2] shape and float32 dtype and contains the absolute pixel
+                                         coordinate in (x, y) format of the P input points.
+            point_labels (torch.Tensor): shape [B, P] and int32 dtype, where 1 means
+                                         positive (foreground), 0 means negative (background), and -1 means padding.
+            mask_input (torch.Tensor): shape [B, 1, 256, 256]. Low resolution mask input to the model,
+                                       each has shape 1xHxW, where H=W=256. Typically coming from a previous iteration.
+            has_mask_input (torch.Tensor): shape [B], whether there is mask input or not.
+            image_size (torch.Tensor): size of the input image. It is 2-element interge tensor of (H, W).
+
+        Returns:
+            masks: masks that normalized to size according to image_size.
+            iou_predictions:
+        """
         sparse_embedding = self._embed_points(point_coords, point_labels)
         self.sparse_embedding = sparse_embedding
         dense_embedding = self._embed_masks(mask_input, has_mask_input)
@@ -92,7 +115,7 @@ class SAM2ImageDecoder(nn.Module):
         masks = torch.clamp(masks, -32.0, 32.0)
         print(masks.shape, iou_predictions.shape)
 
-        masks = F.interpolate(masks, (img_size[0], img_size[1]), mode="bilinear", align_corners=False)
+        masks = F.interpolate(masks, (image_size[0], image_size[1]), mode="bilinear", align_corners=False)
 
         return masks, iou_predictions
 

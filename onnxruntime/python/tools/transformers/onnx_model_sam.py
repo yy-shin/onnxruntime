@@ -6,7 +6,9 @@
 import logging
 from typing import Optional
 
-from fusion_attention_sam import FusionAttentionSam
+from fusion_layernorm import FusionLayerNormalizationNCHW
+#from fusion_attention_sam import FusionAttentionSam, FusionMultiHeadAttentionSam
+from fusion_attention_sam import FusionMultiHeadAttentionSam
 from fusion_bias_add import FusionBiasAdd
 from fusion_nhwc_conv import FusionNhwcConv
 from fusion_options import FusionOptions
@@ -88,30 +90,39 @@ class SamOnnxModel(BertOnnxModel):
         if total:
             logger.info("Removed %d Transpose nodes", total)
 
+    def fuse_layer_norm(self):
+        super().fuse_layer_norm()
+
+        fusion = FusionLayerNormalizationNCHW(self)
+        fusion.apply()
+
     def fuse_multi_head_attention(self, options: Optional[FusionOptions] = None):
         # Self Attention
-        enable_packed_qkv = False  # (options is None) or options.enable_packed_qkv
-        self_attention_fusion = FusionAttentionSam(
-            self,
-            self.hidden_size,
-            self.num_heads,
-            is_cross_attention=False,
-            enable_packed_qkv=enable_packed_qkv,
-            enable_packed_kv=False,
-        )
-        self_attention_fusion.apply()
+        # enable_packed_qkv = False  # (options is None) or options.enable_packed_qkv
+        # self_attention_fusion = FusionAttentionSam(
+        #     self,
+        #     self.hidden_size,
+        #     self.num_heads,
+        #     is_cross_attention=False,
+        #     enable_packed_qkv=enable_packed_qkv,
+        #     enable_packed_kv=False,
+        # )
+        # self_attention_fusion.apply()
 
         # Cross Attention
-        enable_packed_kv = False  # (options is None) or options.enable_packed_kv
-        cross_attention_fusion = FusionAttentionSam(
-            self,
-            self.hidden_size,
-            self.num_heads,
-            is_cross_attention=True,
-            enable_packed_qkv=False,
-            enable_packed_kv=enable_packed_kv,
-        )
-        cross_attention_fusion.apply()
+        # enable_packed_kv = False  # (options is None) or options.enable_packed_kv
+        # cross_attention_fusion = FusionAttentionSam(
+        #     self,
+        #     self.hidden_size,
+        #     self.num_heads,
+        #     is_cross_attention=True,
+        #     enable_packed_qkv=False,
+        #     enable_packed_kv=enable_packed_kv,
+        # )
+        # cross_attention_fusion.apply()
+
+        mha_fusion = FusionMultiHeadAttentionSam(self, self.hidden_size, self.num_heads)
+        mha_fusion.apply()
 
     def fuse_bias_add(self):
         fusion = FusionBiasAdd(self)

@@ -59,7 +59,7 @@ MODEL_TYPES = {
     "gpt2_tf": (Gpt2OnnxModel, "tf2onnx", 0),  # might add a class for GPT2OnnxModel for TF later.
     "gpt_neox": (BertOnnxModel, "pytorch", 0),  # GPT-NeoX
     "phi": (PhiOnnxModel, "pytorch", 0),
-    "sam": (SamOnnxModel, "pytorch", 0),
+    "sam": (SamOnnxModel, "pytorch", 1),
     "swin": (BertOnnxModel, "pytorch", 1),
     "tnlr": (TnlrOnnxModel, "pytorch", 1),
     "t5": (T5OnnxModel, "pytorch", 2),
