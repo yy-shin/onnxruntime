@@ -3,8 +3,7 @@ steps:
         pip install requests
       displayName: Install requests
     - bash: |
-        find . -name *.apk
-        cd android_test/android
+        echo $(find . -name *.apk)
       displayName: Echo App URL
     - bash: |
         echo "$(app_url)"
