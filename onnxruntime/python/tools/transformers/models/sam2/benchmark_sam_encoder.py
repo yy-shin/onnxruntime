@@ -83,7 +83,7 @@ class TestConfig:
             "image": (self.batch_size, 3, self.height, self.width),
             "high_res_feats_0": (self.batch_size, 32, self.height // 4, self.width // 4),
             "high_res_feats_1": (self.batch_size, 64, self.height // 8, self.width // 8),
-            "image_embed": (self.batch_size, 256, self.height // 16, self.width // 16),            
+            "image_embed": (self.batch_size, 256, self.height // 16, self.width // 16),
         }
         return shapes
 
@@ -109,6 +109,7 @@ def create_ort_session(config: TestConfig, session_options=None) -> CudaSession:
         device_id = torch.cuda.current_device() if isinstance(config.device, str) else config.device.index
         provider_options = CudaSession.get_cuda_provider_options(device_id, config.enable_cuda_graph)
         provider_options["use_tf32"] = int(config.use_tf32)
+        provider_options["prefer_nhwc"] = 1
         providers = [(config.provider, provider_options), "CPUExecutionProvider"]
     else:
         providers = ["CPUExecutionProvider"]
@@ -146,27 +147,35 @@ def run_torch(config: TestConfig):
     model_cfg = config.model_cfg()
     sam2_checkpoint = config.checkpoint_path
 
-    from sam2.build_sam import build_sam2
-    sam2_model = build_sam2(model_cfg, sam2_checkpoint, device=config.device)
+    with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16): # TODO: test bfloat16
+        from sam2.build_sam import build_sam2
+        sam2_model = build_sam2(model_cfg, sam2_checkpoint, device=config.device)
+        sam2_model.image_encoder.forward = torch.compile(
+                    sam2_model.image_encoder.forward,
+                    #mode="max-autotune",
+                    mode="reduce-overhead",
+                    fullgraph=True,
+                    dynamic=False,
+        )
 
-    img = torch.randn(1, 3, config.height, config.width).to(device=config.device)
-    sam2_encoder = SAM2ImageEncoder(sam2_model)
+        img = torch.randn(1, 3, config.height, config.width).to(device=config.device, dtype=torch.bfloat16)
+        sam2_encoder = SAM2ImageEncoder(sam2_model)
 
-    # warm up
-    for _ in range(3):
-        high_res_feats_0, high_res_feats_1, image_embed = sam2_encoder(img)
-        print("high_res_feats_0 shape:", high_res_feats_0.shape)
-        print("high_res_feats_1 shape:", high_res_feats_1.shape)
-        print("image_embed shape:", image_embed.shape)
+        # warm up
+        for _ in range(3):
+            high_res_feats_0, high_res_feats_1, image_embed = sam2_encoder(img)
+            print("high_res_feats_0 shape:", high_res_feats_0.shape)
+            print("high_res_feats_1 shape:", high_res_feats_1.shape)
+            print("image_embed shape:", image_embed.shape)
 
-    start = time.time()
-    for _ in range(config.repeats):
-        high_res_feats_0, high_res_feats_1, image_embed = sam2_encoder(img)
-        if config.device.type == "cuda":
-            torch.cuda.synchronize()
-    end = time.time()
+        start = time.time()
+        for _ in range(config.repeats):
+            high_res_feats_0, high_res_feats_1, image_embed = sam2_encoder(img)
+            if config.device.type == "cuda":
+                torch.cuda.synchronize()
+        end = time.time()
 
-    return (end - start) /  config.repeats
+        return (end - start) /  config.repeats
 
 def run_test(
     csv_writer: csv.DictWriter,
@@ -219,7 +228,7 @@ def run_test(
         except Exception as e:
             print(f"Failed to run {config=}. Exception: {e}")
             return
-        
+
         latency_list = []
         for _ in range(repeats):
             latency = measure_latency(session, input_dict)
