@@ -52,21 +52,21 @@ jobs:
       create: true
       start: true
 
-  - script: |
-      set -e -x
-      mkdir android_test
-      cd android_test
-      cp -av $(Build.SourcesDirectory)/java/src/test/android ./
-      cd ./android
-      mkdir -p app/libs
-      cp $(Build.BinariesDirectory)/final-android-aar/${{parameters.packageName}}-$(OnnxRuntimeVersion).aar app/libs/onnxruntime-android.aar
-#      $(Build.SourcesDirectory)/java/gradlew --no-daemon clean connectedDebugAndroidTest --stacktrace
-    displayName: Run E2E test using Emulator
-    workingDirectory: $(Build.BinariesDirectory)
+#   - script: |
+#       set -e -x
+#       mkdir android_test
+#       cd android_test
+#       cp -av $(Build.SourcesDirectory)/java/src/test/android ./
+#       cd ./android
+#       mkdir -p app/libs
+#       cp $(Build.BinariesDirectory)/final-android-aar/${{parameters.packageName}}-$(OnnxRuntimeVersion).aar app/libs/onnxruntime-android.aar
+# #      $(Build.SourcesDirectory)/java/gradlew --no-daemon clean connectedDebugAndroidTest --stacktrace
+#     displayName: Run E2E test using Emulator
+#     workingDirectory: $(Build.BinariesDirectory)
 
   - script: |
       set -e -x
-      cd android_test/android/app/build/outputs/apk
+      cd $(Build.SourcesDirectory)/java/android_test/android/app/build/outputs/apk
       echo "##vso[task.setvariable variable=apk_dir]$(pwd)"
       pip install requests
     displayName: install requests
