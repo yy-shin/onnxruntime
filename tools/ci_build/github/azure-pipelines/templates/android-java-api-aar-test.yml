@@ -80,7 +80,7 @@ jobs:
 
   - script: |
       set -e -x
-      cd /tools/python
+      cd tools/python
       pip install requests
       python upload_and_run_browserstack_tests.py
         --id $(browserstack_username) \
