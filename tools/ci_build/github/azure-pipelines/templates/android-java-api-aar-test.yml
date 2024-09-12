@@ -70,7 +70,9 @@ jobs:
 
   - script: |
       set -e -x
+      ls
       echo "$(find . -iname "*.apk")"
+      echo "$(pwd)"
       cd android_test/android
       cd app/build/outputs/apk
       echo "##vso[task.setvariable variable=apk_dir]$(pwd)"
