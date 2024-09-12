@@ -73,21 +73,22 @@ jobs:
       ls
       echo "$(find . -iname "*.apk")"
       echo "$PWD"
-      cd android_test/android
-      cd app/build/outputs/apk
+      cd android_test/android/app/build/outputs/apk
       echo "##vso[task.setvariable variable=apk_dir]$PWD"
-      echo "$(apk_dir)"
-      cd $(Build.SourcesDirectory)
-      ls
-      cd onnxruntime/python/tools
+    displayName: Set APK variable
+    workingDirectory: $(Build.BinariesDirectory)
+
+  - script: |
+      set -e -x
+      cd /tools/python
       pip install requests
       python upload_and_run_browserstack_tests.py
         --id $(browserstack_username) \
         --token $(browserstack_access_key) \
         --app_apk_path $(apk_dir)/debug/app-debug.apk \
         --test_apk_path $(apk_dir)/androidTest/debug/app-debug-androidTest.apk
-    displayName: install requests
-    workingDirectory: $(Build.BinariesDirectory)
+    displayName: Install requests & run BrowserStack tests
+    workingDirectory: $(Build.SourcesDirectory)
 
   # - template: use-browserstack.yml
 
