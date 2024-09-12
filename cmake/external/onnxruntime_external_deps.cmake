@@ -633,6 +633,20 @@ if (onnxruntime_USE_COREML)
   FetchContent_Populate(coremltools)
 endif()
 
+if (onnxruntime_USE_WEBGPU)
+  FetchContent_Declare(
+    dawn
+    URL ${DEP_URL_dawn}
+    URL_HASH SHA1=${DEP_SHA1_dawn}
+  )
+  set(DAWN_FETCH_DEPENDENCIES ON)
+  set(DAWN_ENABLE_INSTALL ON)
+  set(TINT_BUILD_TESTS OFF)
+  set(DAWN_USE_BUILT_DXC ON)
+  set(DAWN_DXC_ENABLE_ASSERTS_IN_NDEBUG OFF)
+  onnxruntime_fetchcontent_makeavailable(dawn)
+endif()
+
 message(STATUS "Finished fetching external dependencies")
 
 set(onnxruntime_LINK_DIRS )
