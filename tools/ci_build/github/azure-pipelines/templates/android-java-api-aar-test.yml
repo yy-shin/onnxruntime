@@ -82,7 +82,7 @@ jobs:
       set -e -x
       cd tools/python
       pip install requests
-      python upload_and_run_browserstack_tests.py
+      python upload_and_run_browserstack_tests.py \
         --id $(browserstack_username) \
         --token $(browserstack_access_key) \
         --app_apk_path $(apk_dir)/debug/app-debug.apk \
