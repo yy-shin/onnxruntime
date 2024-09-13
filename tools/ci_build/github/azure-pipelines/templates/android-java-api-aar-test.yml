@@ -85,8 +85,8 @@ jobs:
       python upload_and_run_browserstack_tests.py \
         --id $(browserstack_username) \
         --token $(browserstack_access_key) \
-        --app_apk_path $(apk_dir)/debug/app-debug.apk \
-        --test_apk_path $(apk_dir)/androidTest/debug/app-debug-androidTest.apk
+        --app_apk_path "$(apk_dir)/debug/app-debug.apk" \
+        --test_apk_path "$(apk_dir)/androidTest/debug/app-debug-androidTest.apk"
     displayName: Install requests & run BrowserStack tests
     workingDirectory: $(Build.SourcesDirectory)
 
