@@ -74,7 +74,7 @@ jobs:
       echo "$(find . -iname "*.apk")"
       echo "$PWD"
       cd android_test/android/app/build/outputs/apk
-      echo "##vso[task.setvariable variable=apk_dir]$PWD"
+      echo ##vso[task.setvariable variable=apk_dir]$PWD
     displayName: Set APK variable
     workingDirectory: $(Build.BinariesDirectory)
 
@@ -82,6 +82,7 @@ jobs:
       set -e -x
       cd tools/python
       pip install requests
+      echo $(apk_dir)
       python upload_and_run_browserstack_tests.py \
         --id $(browserstack_username) \
         --token $(browserstack_access_key) \
