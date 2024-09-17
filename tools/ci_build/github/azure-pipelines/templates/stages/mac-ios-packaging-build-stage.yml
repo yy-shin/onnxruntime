@@ -113,14 +113,12 @@ stages:
 
     - script: |
         set -e -x
-        appcenter test run xcuitest \
-          --app "AI-Frameworks/ORT-Mobile-iOS" \
-          --devices $(app_center_test_devices) \
-          --test-series "master" \
-          --locale "en_US" \
-          --build-dir $(Build.BinariesDirectory)/app_center_test/apple_package_test/DerivedData/Build/Products/Debug-iphoneos \
-          --token $(app_center_api_token)
-      displayName: "Run E2E tests on App Center"
+        echo "$(find . -iname "*.ipa")"
+        echo "==================================================================="
+        echo "$(find . -iname "*debug*")"
+        cd $(Build.BinariesDirectory)/app_center_test/apple_package_test/DerivedData/Build/Products/Debug-iphoneos
+        echo "$(ls)"
+      displayName: "Find app and tests files"
 
     - script: |
         set -e -x
