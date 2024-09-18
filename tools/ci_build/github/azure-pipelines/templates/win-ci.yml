@@ -100,10 +100,10 @@ stages:
   - job: Windows_Packaging_${{ parameters.stage_name_suffix }}
     workspace:
       clean: all
-      pool:
-        name: onnxruntime-Win-CPU-2022
-        demands:
-          - ImageVersionOverride -equals 49.0.0
+    pool:
+      name: onnxruntime-Win-CPU-2022
+      demands:
+        - ImageVersionOverride -equals 49.0.0
     ${{ if eq(parameters['UseIncreasedTimeoutForTests'], 'true') }}:
       timeoutInMinutes: 1200
     ${{ else }}:
