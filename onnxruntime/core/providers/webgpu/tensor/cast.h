@@ -8,9 +8,9 @@
 namespace onnxruntime {
 namespace webgpu {
 
-class CastProgram final : public Program<CastProgram> {
+class CastProgram final : public Program {
  public:
-  CastProgram(int32_t to) : Program{"Cast"}, to_{to} {}
+  CastProgram(int32_t to) : Program{"Cast", {{}, {}, uniform_variables_own}}, to_{to} {}
 
   Status GenerateShaderCode(ShaderHelper& sh) const override;
 

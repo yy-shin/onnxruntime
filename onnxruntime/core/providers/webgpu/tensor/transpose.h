@@ -11,10 +11,10 @@
 namespace onnxruntime {
 namespace webgpu {
 
-class TransposeProgram final : public Program<TransposeProgram> {
+class TransposeProgram final : public Program {
  public:
   TransposeProgram(const gsl::span<const size_t>& permutations)
-      : Program{"Transpose"}, perm_(permutations.begin(), permutations.end()) {
+      : Program{"Transpose", {{}, {}, uniform_variables_own}}, perm_(permutations.begin(), permutations.end()) {
   }
 
   Status GenerateShaderCode(ShaderHelper& sh) const override;

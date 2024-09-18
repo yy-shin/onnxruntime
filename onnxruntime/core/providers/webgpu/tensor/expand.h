@@ -9,9 +9,9 @@
 namespace onnxruntime {
 namespace webgpu {
 
-class ExpandProgram final : public Program<ExpandProgram> {
+class ExpandProgram final : public Program {
  public:
-  ExpandProgram() : Program{"Expand"} {}
+  ExpandProgram() : Program{"Expand", {{}, {}, uniform_variables_own}} {}
 
   Status GenerateShaderCode(ShaderHelper& sh) const override;
 

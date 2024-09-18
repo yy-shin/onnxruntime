@@ -13,9 +13,9 @@ namespace webgpu {
 using namespace onnxruntime::webgpu;
 using onnxruntime::webgpu::ComputeContext;
 
-class FastGeluProgram final : public Program<FastGeluProgram> {
+class FastGeluProgram final : public Program {
  public:
-  FastGeluProgram(int bias_components) : Program{"FastGelu"}, bias_components_{bias_components} {
+  FastGeluProgram(int bias_components) : Program{"FastGelu", {{}, {}, uniform_variables_own}}, bias_components_{bias_components} {
   }
 
   Status GenerateShaderCode(ShaderHelper& sh) const override;

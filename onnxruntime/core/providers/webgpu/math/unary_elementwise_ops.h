@@ -10,10 +10,16 @@
 namespace onnxruntime {
 namespace webgpu {
 
-class UnaryElementwiseProgram final : public Program<UnaryElementwiseProgram> {
+class UnaryElementwiseProgram final : public Program {
  public:
   UnaryElementwiseProgram(const std::string& kernel_name, std::string_view expression, std::string_view additional_impl, ShaderUsage usage)
-      : Program{kernel_name}, expression_{expression}, additional_impl_{additional_impl}, additional_usage_{usage} {
+      : Program{kernel_name,
+                {{},
+                 {},
+                 uniform_variables_own}},
+        expression_{expression},
+        additional_impl_{additional_impl},
+        additional_usage_{usage} {
   }
 
   Status GenerateShaderCode(ShaderHelper& sh) const override;

@@ -10,21 +10,22 @@
 namespace onnxruntime {
 namespace webgpu {
 
-class BinaryElementwiseProgram final : public Program<BinaryElementwiseProgram> {
+class BinaryElementwiseProgram final : public Program {
  public:
   BinaryElementwiseProgram(const std::string& kernel_name,
                            const std::string& expression,
                            const bool is_broadcast,
                            const bool is_lhs_scalar,
                            const bool is_rhs_scalar,
-                           const bool vectorize) : Program{kernel_name},
+                           const bool vectorize) : Program{kernel_name, {{}, {}, uniform_variables_own}},
                                                    expression_{expression},
                                                    is_broadcast_{is_broadcast},
                                                    is_lhs_scalar_{is_lhs_scalar},
                                                    is_rhs_scalar_{is_rhs_scalar},
                                                    vectorize_{vectorize} {}
 
-  Status GenerateShaderCode(ShaderHelper& sh) const override;
+  Status
+  GenerateShaderCode(ShaderHelper& sh) const override;
 
   WEBGPU_PROGRAM_DEFINE_UNIFORM_VARIABLES({"vec_size", ProgramUniformVariableDataType::Uint32});
 
