@@ -100,16 +100,28 @@ stages:
   - job: Windows_Packaging_${{ parameters.stage_name_suffix }}
     workspace:
       clean: all
-    ${{ if contains(parameters.ort_build_pool_name, 'GPU') }}:
-      pool: onnxruntime-Win-CPU-2022
-    ${{ else }}:
-      pool: ${{ parameters.ort_build_pool_name }}
+      pool:
+        name: onnxruntime-Win-CPU-2022
+        demands:
+          - ImageVersionOverride -equals 49.0.0
     ${{ if eq(parameters['UseIncreasedTimeoutForTests'], 'true') }}:
       timeoutInMinutes: 1200
     ${{ else }}:
       timeoutInMinutes: 360
 
     steps:
+      - task: PowerShell@2
+        displayName: 'KYLE - verify gpg installation'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "================GPG VERSION START================="
+            $GPG_PATH="C:\Program Files (x86)\gnupg\bin\gpg.exe"
+            Start-Process -FilePath $GPG_PATH -ArgumentList "--version" -NoNewWindow -PassThru -Wait
+            Write-Host "================GPG VERSION END================="
+            exit 1
+          workingDirectory: $(Build.BinariesDirectory)
+
       - task: mspremier.PostBuildCleanup.PostBuildCleanup-task.PostBuildCleanup@3
         displayName: 'Clean Agent Directories'
         condition: always()
