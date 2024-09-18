@@ -346,6 +346,38 @@ class ProgramBase {
 
 using Program = ProgramBase;
 
+namespace detail {
+// helper function to convert a C-style array to std::array
+//
+// This is basically the same as std::to_array in C++20.
+//
+template <typename T, size_t N, size_t... Idx>
+constexpr auto _to_std_array_impl(T (&arr)[N], std::index_sequence<Idx...>) -> std::array<std::remove_cv_t<T>, N> {
+  return {{arr[Idx]...}};
+}
+
+template <typename T, size_t N>
+constexpr auto _to_std_array(T (&arr)[N]) -> std::array<std::remove_cv_t<T>, N> {
+  return _to_std_array_impl(arr, std::make_index_sequence<N>{});
+}
+
+// helper function to concatenate a std::array and a C-style array to a std::array
+//
+template <typename T, size_t L, size_t... IdxL, size_t R, size_t... IdxR>
+constexpr std::array<std::remove_cv_t<T>, L + R> _concat2_impl(const std::array<T, L>& lhs,
+                                                               T (&rhs)[R],
+                                                               std::index_sequence<IdxL...>,
+                                                               std::index_sequence<IdxR...>) {
+  return {{lhs[IdxL]..., rhs[IdxR]...}};
+}
+
+template <typename T, size_t L, size_t R>
+constexpr std::array<std::remove_cv_t<T>, L + R> _concat2(const std::array<T, L>& lhs, T (&rhs)[R]) {
+  return _concat2_impl(lhs, rhs, std::make_index_sequence<L>{}, std::make_index_sequence<R>{});
+}
+
+}  // namespace detail
+
 #define WEBGPU_PROGRAM_DEFINE_(identifier, T, ...)             \
   static constexpr const T identifier##_own[] = {__VA_ARGS__}; \
   static constexpr const auto identifier =                     \
