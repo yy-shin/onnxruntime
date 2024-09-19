@@ -15,6 +15,10 @@ parameters:
   type: string
   default: '*.dll'
 
+- name: KeyCode
+  type: string
+  default: 'CP-230012'
+
 steps:
 - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
   displayName: ${{ parameters.DisplayName }}
@@ -30,7 +34,7 @@ steps:
     inlineOperation: |
       [
         {
-          "keyCode": "CP-230012",
+          "keyCode": "${{ parameters.KeyCode }}",
           "operationSetCode": "SigntoolSign",
           "parameters": [
             {
