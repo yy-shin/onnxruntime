@@ -103,7 +103,7 @@ stages:
     pool:
       name: onnxruntime-Win-CPU-2022
       demands:
-        - ImageVersionOverride -equals 49.0.0
+        - ImageVersionOverride -equals 58.0.0
     ${{ if eq(parameters['UseIncreasedTimeoutForTests'], 'true') }}:
       timeoutInMinutes: 1200
     ${{ else }}:
