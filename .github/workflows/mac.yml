@@ -57,7 +57,9 @@ jobs:
           --build_objc \
           --use_coreml \
           --use_xnnpack \
-          --use_binskim_compliant_compile_flags
+          --use_binskim_compliant_compile_flags \
+          --apple_sysroot=macosx\
+          --osx_arch=arm64
 
   Vcpkg:
     runs-on: macos-13
