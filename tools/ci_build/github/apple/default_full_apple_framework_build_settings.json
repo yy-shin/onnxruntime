@@ -18,7 +18,6 @@
             "--use_xcode",
             "--build_apple_framework",
             "--use_coreml",
-            "--use_xnnpack",
             "--skip_tests",
             "--cmake_extra_defines=onnxruntime_BUILD_UNIT_TESTS=OFF"
         ],
