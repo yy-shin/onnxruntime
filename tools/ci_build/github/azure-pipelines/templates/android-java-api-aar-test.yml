@@ -68,30 +68,18 @@ jobs:
 
   - script: |
       set -e -x
-      cd android_test/android/app/build/outputs/apk
-      echo "##vso[task.setvariable variable=apk_dir]$PWD"
-      echo "$(find . -iname "*.apk")"
-    displayName: Set APK variable
-    workingDirectory: $(Build.BinariesDirectory)
-
-  - script: |
-      set -e -x
       cd tools/python
       pip install requests
-      echo $(apk_dir)
+      export BROWSERSTACK_ID=$(browserstack_username)
+      export BROWSERSTACK_TOKEN=$(browserstack_access_key)
       python upload_and_run_browserstack_tests.py \
-        --id $(browserstack_username) \
-        --token $(browserstack_access_key) \
+        --test_platform espresso \
         --app_apk_path "$(Build.BinariesDirectory)/android_test/android/app/build/outputs/apk/debug/app-debug.apk" \
         --test_apk_path "$(Build.BinariesDirectory)/android_test/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk" \
-    displayName: Install requests & run BrowserStack tests
+        --devices "Samsung Galaxy S23-13.0" "Google Pixel 3-9.0"
+    displayName: Run E2E tests using Browserstack
     workingDirectory: $(Build.SourcesDirectory)
-
-  # - template: use-browserstack.yml
-
-#  - template: use-android-emulator.yml
- #   parameters:
-  #    stop: true
+    timeoutInMinutes: 15
 
   - template: component-governance-component-detection-steps.yml
     parameters :
