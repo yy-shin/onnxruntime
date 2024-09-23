@@ -110,16 +110,12 @@ stages:
           KeyVaultName: 'ort-release'
           SecretsFilter: 'java-pgp-pwd,java-pgp-key'
           RunAsPreJob: false
+
       - task: PowerShell@2
-        displayName: 'KYLE - Check Parameters'
+        displayName: 'KYLE - Debugging PowerShell'
         inputs:
-          targetType: inline
-          script: |
-            Write-Host "================PARAM EXISTED START================="
-            if($java-pgp-pwd) {Write-Host "YES! java-pgp-pwd exists"} else {Write-Host "NO! java-pgp-pwd NOT exists"}
-            if($java-pgp-key) {Write-Host "YES! java-pgp-key exists"} else {Write-Host "NO! java-pgp-key NOT exists"}
-            Write-Host "================PARAM EXISTED START================="
-            exit 1
+          filePath: '$(Build.SourcesDirectory)/tools/ci_build/github/azure-pipelines/templates/0-kyle-tester.ps11'
+          workingDirectory: '$(Build.BinariesDirectory)'
 
       - template: telemetry-steps.yml
 
