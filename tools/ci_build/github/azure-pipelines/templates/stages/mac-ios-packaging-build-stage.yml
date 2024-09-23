@@ -15,10 +15,10 @@ stages:
     displayName: "Build iOS package for variant: ${{ parameters.packageVariant}}"
 
     pool:
-      vmImage: "macOS-13"
+      vmImage: "macOS-latest"
 
     variables:
-      xcodeVersion: "14.3.1"
+      xcodeVersion: "14.2"
       ortPodVersion: $[stageDependencies.IosPackaging_SetCommonVariables.j.outputs['SetCommonVariables.ORT_POD_VERSION']]
 
       ${{ if eq(parameters.packageVariant, 'Full') }}:
@@ -62,6 +62,8 @@ stages:
         architecture: "x64"
 
     - template: ../use-xcode-version.yml
+      parameters:
+        xcodeVersion: ${{ variables.xcodeVersion }}
 
     - template: ../install-appcenter.yml
 
@@ -102,7 +104,8 @@ stages:
         xcodeDeveloperDir: '/Applications/Xcode_${{ variables.xcodeVersion }}.app/Contents/Developer'
         signingOption: 'manual'
         signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
-        provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
+        provisioningProfileName: 'temporary *'  # temporary name, change it back to the original below later
+        #provisioningProfileName: 'iOS Team Provisioning Profile'
         args: '-derivedDataPath $(Build.BinariesDirectory)/app_center_test/apple_package_test/DerivedData'
         workingDirectory: '$(Build.BinariesDirectory)/app_center_test/apple_package_test/'
         useXcpretty: false  # xcpretty can hide useful error output so we will disable it
@@ -116,6 +119,19 @@ stages:
         cd $(Build.BinariesDirectory)/app_center_test/apple_package_test/DerivedData/Build/Products/Debug-iphoneos
         echo "$(ls)"
       displayName: "Find app and tests files"
+
+    - script: |
+        set -e -x
+        cd tools/python
+        pip install requests
+        export BROWSERSTACK_ID=$(browserstack_username)
+        export BROWSERSTACK_TOKEN=$(browserstack_access_key)
+        python upload_and_run_browserstack_tests.py \
+          --test_platform espresso \
+          --app_apk_path "$(Build.BinariesDirectory)/app_center_test/apple_package_test/DerivedData/Build/Products/Debug-iphoneos/ios_package_test.app" \
+          --test_apk_path "$(Build.BinariesDirectory)/app_center_test/apple_package_test/DerivedData/Build/Products/Debug-iphoneos/ios_package_testUITests-Runner.app" \
+          --devices "Samsung Galaxy S23-13.0" "Google Pixel 3-9.0"
+      displayName: Run E2E tests using Browserstack
 
     - script: |
         set -e -x
