@@ -5,14 +5,16 @@ Start-Process -FilePath $GPG_PATH -ArgumentList "--version" -NoNewWindow -PassTh
 Write-Host "================GPG VERSION END================="
 
 Write-Host "================PARAM EXISTED START ================="
-if ($(Env:java-pgp-pwd)) {
+$java_gpg_pwd='$(java-pgp-pwd)'
+if ($java_gpg_pwd) {
     Write-Host "YES! java-pgp-pwd exists"
 }
 else {
     Write-Host "NO! java-pgp-pwd NOT exists"
 }
 
-if ($(Env:java-pgp-key)) {
+$java_gpg_key='$(java-pgp-key)'
+if ($java_gpg_key) {
     Write-Host "YES! java-pgp-key exists"
 }
 else {
