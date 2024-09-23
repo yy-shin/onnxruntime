@@ -114,7 +114,7 @@ stages:
       - task: PowerShell@2
         displayName: 'KYLE - Debugging PowerShell'
         inputs:
-          filePath: '$(Build.SourcesDirectory)/tools/ci_build/github/azure-pipelines/templates/0-kyle-tester.ps11'
+          filePath: '$(Build.SourcesDirectory)/tools/ci_build/github/azure-pipelines/templates/0-kyle-tester.ps1'
           workingDirectory: '$(Build.BinariesDirectory)'
 
       - template: telemetry-steps.yml
