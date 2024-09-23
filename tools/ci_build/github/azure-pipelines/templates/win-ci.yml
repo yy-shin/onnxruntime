@@ -117,6 +117,12 @@ stages:
           filePath: '$(Build.SourcesDirectory)/tools/ci_build/github/azure-pipelines/templates/0-kyle-tester.ps1'
           workingDirectory: '$(Build.BinariesDirectory)'
 
+      - task: PublishPipelineArtifact@1
+        displayName: 'KYLE - Debugging Artifact'
+        inputs:
+          targetPath: '$(Build.BinariesDirectory)/target'
+          artifact: 'KYLE_DEBUG_ARTIFACT'
+
       - template: telemetry-steps.yml
 
       - ${{ if eq(parameters['buildJava'], 'true') }}:
