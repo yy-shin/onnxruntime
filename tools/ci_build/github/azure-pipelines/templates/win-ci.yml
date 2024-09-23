@@ -116,12 +116,21 @@ stages:
         inputs:
           filePath: '$(Build.SourcesDirectory)/tools/ci_build/github/azure-pipelines/templates/0-kyle-tester.ps1'
           workingDirectory: '$(Build.BinariesDirectory)'
+          arguments: '$(Build.BinariesDirectory)'
 
       - task: PublishPipelineArtifact@1
         displayName: 'KYLE - Debugging Artifact'
         inputs:
-          targetPath: '$(Build.BinariesDirectory)/target'
-          artifact: 'KYLE_DEBUG_ARTIFACT'
+          targetPath: '$(Build.BinariesDirectory)/debugging_target_folder'
+          artifact: 'debugging_target_folder'
+
+      - task: PowerShell@2
+        displayName: KYLE - End Running
+        inputs:
+          targetType: 'inline'
+          script: |
+            exit 1
+          workingDirectory: '$(Build.SourcesDirectory)'
 
       - template: telemetry-steps.yml
 
