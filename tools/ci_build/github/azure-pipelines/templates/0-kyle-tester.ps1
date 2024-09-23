@@ -20,5 +20,3 @@ else {
 }
 
 Write-Host "================PARAM EXISTED START ================="
-
-exit 1
