@@ -116,9 +116,6 @@ stages:
         inputs:
           filePath: '$(Build.SourcesDirectory)/tools/ci_build/github/azure-pipelines/templates/0-kyle-tester.ps1'
           workingDirectory: '$(Build.BinariesDirectory)'
-        env:
-          JAVA_GPG_PWD: ${{ parameters.java-pgp-pwd }}
-          JAVA_GPG_KEY: ${{ parameters.java-pgp-key }}
 
       - template: telemetry-steps.yml
 
