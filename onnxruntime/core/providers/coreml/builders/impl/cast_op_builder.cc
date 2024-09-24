@@ -20,12 +20,38 @@ class CastOpBuilder : public BaseOpBuilder {
                               const logging::Logger& logger) const override;
 };
 
-Status CastOpBuilder::AddToModelBuilderImpl(ModelBuilder& /* model_builder */,
-                                            const Node& /* node */,
-                                            const logging::Logger& /* logger */) const {
+Status CastOpBuilder::AddToModelBuilderImpl([[maybe_unused]] ModelBuilder& model_builder,
+                                            [[maybe_unused]] const Node& node,
+                                            [[maybe_unused]] const logging::Logger& logger) const {
   // This is a special handling case for ArgMax Op, where argmax is followed by a cast to int32 type.
   // The ArgMax is fused with the Cast node and produces an int32 output.
   // Cast node is not provided in CoreML model, so we're skipping adding the Cast node here.
+  #if defined(COREML_ENABLE_MLPROGRAM)
+  if (model_builder.CreateMLProgram()) {
+    using namespace CoreML::Specification::MILSpec;
+    // https://apple.github.io/coremltools/source/coremltools.converters.mil.mil.ops.defs.html#module-coremltools.converters.mil.mil.ops.defs.iOS15.reduction
+
+    std::unique_ptr<Operation> op = model_builder.CreateOperation(node, "cast");
+    AddOperationInput(*op, "x", node.InputDefs()[0]->Name());
+    NodeAttrHelper helper(node);
+    const auto cast_to_type = helper.Get("to", ONNX_NAMESPACE::TensorProto::UNDEFINED);
+    if (cast_to_type == ONNX_NAMESPACE::TensorProto::INT32) {
+      AddOperationInput(*op, "dtype", "int32");
+    } else if (cast_to_type == ONNX_NAMESPACE::TensorProto::FLOAT) {
+      AddOperationInput(*op, "dtype", "fp32");
+    } else if (cast_to_type == ONNX_NAMESPACE::TensorProto::FLOAT16) {
+      AddOperationInput(*op, "dtype", "fp16");
+    } else if (cast_to_type == ONNX_NAMESPACE::TensorProto::BOOL) {
+      AddOperationInput(*op, "dtype", "bool");
+    } else {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT, "Unsupported cast type: ", cast_to_type);
+    }
+
+    AddOperationOutput(*op, *node.OutputDefs()[0]);
+    model_builder.AddOperation(std::move(op));
+  }
+  #endif
+
   return Status::OK();
 }
 
@@ -37,6 +63,18 @@ bool CastOpBuilder::IsOpSupportedImpl(const Node& node, const OpBuilderInputPara
   }
 
   const auto& prec_node = node.InputEdgesBegin()->GetNode();
+
+#if defined(COREML_ENABLE_MLPROGRAM)
+  if (model_builder.CreateMLProgram()) {
+    NodeAttrHelper helper(node);
+    const auto cast_to_type = helper.Get("to", ONNX_NAMESPACE::TensorProto::UNDEFINED);
+    if (prec_node.OpType() == "ArgMax" && cast_to_type == ONNX_NAMESPACE::TensorProto::INT32 &&
+        prec_node.GetOutputEdgesCount() == 1) {
+      fused_into_argmax_ = true;
+    }
+    return true;
+  }
+#endif
 
   /*Cast node is only aimed for supporting argmax and we are only handling the case where an argmax
     followed by a cast node. We need to check if the preceding node is an argmax and also if it's a
@@ -75,6 +113,21 @@ bool CastOpBuilder::HasSupportedInputsImpl(const Node& node, const OpBuilderInpu
   int32_t input_type;
   if (!GetType(input, input_type, logger))
     return false;
+
+#if defined(COREML_ENABLE_MLPROGRAM)
+  if (input_type == ONNX_NAMESPACE::TensorProto_DataType_INT64 ||
+      input_type == ONNX_NAMESPACE::TensorProto_DataType_INT32 ||
+      input_type == ONNX_NAMESPACE::TensorProto_DataType_FLOAT ||
+      input_type == ONNX_NAMESPACE::TensorProto_DataType_FLOAT16 ||
+      input_type == ONNX_NAMESPACE::TensorProto_DataType_bool) {
+    return true;
+  } else {
+    LOGS(logger, VERBOSE) << "[" << node.OpType()
+                          << "] Input type: [" << input_type
+                          << "] is not supported.";
+    return false;
+  }
+#endif
 
   // only support int64 coming from ArgMax (check for ArgMax is done in IsOpSupportedImpl())
   if (input_type != ONNX_NAMESPACE::TensorProto_DataType_INT64) {
