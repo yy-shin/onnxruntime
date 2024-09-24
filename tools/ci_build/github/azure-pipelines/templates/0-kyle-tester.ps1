@@ -15,7 +15,7 @@ $private_key_file = Join-Path -Path $working_directory -ChildPath "private_key.t
 #format 1
 try {
     Write-Host "Generating passphrase and private key files."
-    Out-File -FilePath $passphrase_file -InputObject "$(java-pgp-pwd)"
+    Out-File -FilePath $passphrase_file -InputObject "$(java-pgp-pwd)" -NoNewline -Encoding utf8
     Write-Host "Generated passphrase and private key files."
 
     Write-Host "Importing private key file."
@@ -31,7 +31,7 @@ catch {
 #format 2
 try {
     Write-Host "Generating passphrase and private key files."
-    Out-File -FilePath $passphrase_file -InputObject '$(java-pgp-pwd)'
+    Out-File -FilePath $passphrase_file -InputObject '$(java-pgp-pwd)' -NoNewline -Encoding utf8
     Write-Host "Generated passphrase and private key files."
 
     Write-Host "Importing private key file."
@@ -46,7 +46,7 @@ catch {
 #format 3
 try {
     Write-Host "Generating passphrase and private key files."
-    Out-File -FilePath $passphrase_file -InputObject `'$(java-pgp-pwd)`'
+    Out-File -FilePath $passphrase_file -InputObject `'$(java-pgp-pwd)`' -NoNewline -Encoding utf8
     Write-Host "Generated passphrase and private key files."
 
     Write-Host "Importing private key file."
@@ -61,7 +61,7 @@ catch {
 #format 4
 try {
     Write-Host "Generating passphrase and private key files."
-    Out-File -FilePath $passphrase_file -InputObject `"$(java-pgp-pwd)`"
+    Out-File -FilePath $passphrase_file -InputObject `"$(java-pgp-pwd)`" -NoNewline -Encoding utf8
     Write-Host "Generated passphrase and private key files."
 
     Write-Host "Importing private key file."
