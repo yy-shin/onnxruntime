@@ -39,7 +39,10 @@ jobs:
   workspace:
     clean: all
   timeoutInMinutes:  210
-  pool: ${{parameters.PoolName}}
+  pool:
+    name: ${{parameters.PoolName}}
+    demands:
+        - ImageVersionOverride -equals 6.0.0
   steps:
     - checkout: self
       clean: true
