@@ -53,47 +53,14 @@ jobs:
       inputs:
         azureSubscription: 'OnnxrunTimeCodeSign_20240611'
         KeyVaultName: 'ort-release'
-        SecretsFilter: 'javapgppwd,javapgpkey'
+        SecretsFilter: 'java-pgp-pwd,java-pgp-key'
         RunAsPreJob: false
 
     - script: |
         #!/bin/bash
-        size_of_private_key=${#javapgpkey}
-        size_of_passphrase=${#avapgppwd}
-        echo "Size of private key: $size_of_private_key"
-        echo "Size of passphrase: $size_of_passphrase"
-        echo $javapgppwd > passphrase.txt
-        echo $javapgpkey > private_key.txt
-        readarray -t private_key_array < private_key.txt
-        readarray -t passphrase_array < passphrase.txt
-        echo "private key length: ${#private_key_array[@]}"
-        echo "passphrase length: ${#passphrase_array[@]}"
-      workingDirectory: $(Build.BinariesDirectory)
-      displayName: 'KYLE - no brackets'
-
-    - script: |
-        #!/bin/bash
-        echo $JAVA_PGP_PWD > passphrase.txt
-        echo $JAVA_PGP_KEY > private_key.txt
-        readarray -t private_key_array < private_key.txt
-        readarray -t passphrase_array < passphrase.txt
-        echo "private key length: ${#private_key_array[@]}"
-        echo "passphrase length: ${#passphrase_array[@]}"
-      workingDirectory: $(Build.BinariesDirectory)
-      displayName: 'KYLE - env'
-      env:
-        JAVA_PGP_PWD: $(javapgppwd)
-        JAVA_PGP_KEY: $(javapgpkey)
-
-    - script: |
-        #!/bin/bash
         working_directory=$(Build.BinariesDirectory)
-        original_private_key=$(javapgpkey)
-        original_passphrase=$(javapgppwd)
-
-        #working_directory=$(pwd)
-        #original_private_key=$GPG_KEY
-        #original_passphrase=$GPG_PWD
+        original_private_key=$(java-pgp-key)
+        original_passphrase=$(java-pgp-pwd)
 
         size_of_private_key=${#original_private_key}
         size_of_passphrase=${#original_passphrase}
