@@ -1,10 +1,5 @@
 
 $working_directory = $Args[0]
-$original_passphrase = '$(java-pgp-pwd)'
-$original_private_key = '$(java-pgp-key)'
-Write-Host "==========original_passphrase.length:"$original_passphrase.Length
-Write-Host "==========original_private_key.length:"$original_private_key.Length
-
 $jar_file_directory = $working_directory + "\debugging_target_folder"
 New-Item -ItemType "directory" -Path $jar_file_directory
 
@@ -17,34 +12,80 @@ $passphrase_file = Join-Path -Path $working_directory -ChildPath "passphrase.txt
 $private_key_file = Join-Path -Path $working_directory -ChildPath "private_key.txt"
 
 
-Write-Host "Generating passphrase and private key files."
-Out-File -FilePath $passphrase_file -InputObject $original_passphrase -NoNewline -Encoding ascii
-Out-File -FilePath $private_key_file -InputObject $original_private_key -NoNewline -Encoding ascii
-Write-Host "Generated passphrase and private key files."
+#format 1
+try {
+    Write-Host "Running Format 1......."
+    Write-Host "Generating passphrase and private key files."h
+    Out-File -FilePath $passphrase_file -InputObject $javapgppwd -NoNewline -Encoding ascii
+    Out-File -FilePath $private_key_file -InputObject $javapgpkey -NoNewline -Encoding ascii
 
-[string[]]$key_lines = Get-Content -Path $private_key_file
-Write-Host "===========Key lines count:"$key_lines.Count
+    Write-Host "==========pwd.length: " + $javapgppwd.Length
+    Write-Host "==========key.length: " + $javapgpkey.Length
+    [string[]]$key_lines = Get-Content -Path $private_key_file
+    Write-Host "==========Key file, lines count:"$key_lines.Count
 
-Write-Host "Importing private key file."
-$import_key_args_list = "--batch --import `"$private_key_file`""
-Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
-Write-Host "Imported private key file."
+    Write-Host "Generated passphrase and private key files."
 
-$targeting_original_files = Get-ChildItem $jar_file_directory -Recurse -Force -File -Name
-foreach ($file in $targeting_original_files) {
-    $file_path = Join-Path $jar_file_directory -ChildPath $file
-    Write-Host "GPG signing to file: "$file_path
-    $args_list = "--pinentry-mode loopback --passphrase-file `"$passphrase_file`" -ab `"$file_path`""
-    Start-Process -FilePath $GPG_PATH -ArgumentList $args_list -NoNewWindow -PassThru -Wait
+    Write-Host "Importing private key file."
+    $import_key_args_list = "--batch --import `"$private_key_file`""
+    Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
+    Write-Host "Imported private key file."
+    Write-Host "Format 1 completed."
+}
+catch {
+    Write-Host "FAILED: format 1"
 }
 
-$targeting_asc_files = Get-ChildItem $jar_file_directory -Recurse -Force -File -Name
-foreach ($file in $targeting_asc_files) {
-    $file_path = Join-Path $jar_file_directory -ChildPath $file
-    Write-Host "Adding checksum of sha256 to file: "$file_path
-    $file_path_sha256 = $file_path + ".sha256"
-    CertUtil -hashfile $file_path SHA256
-    CertUtil -hashfile $file_path SHA256 | find /v `"hash`" | Out-File -FilePath $file_path_sha256
+
+#format 2
+try {
+    Write-Host "Running Format 2......."
+    Write-Host "Generating passphrase and private key files."
+    Out-File -FilePath $passphrase_file -InputObject $Env:javapgppwd -NoNewline -Encoding ascii
+    Out-File -FilePath $private_key_file -InputObject $Env:javapgpkey -NoNewline -Encoding ascii
+
+    Write-Host "==========pwd.length: " + $Env:javapgppwd.Length
+    Write-Host "==========key.length: " + $Env:javapgpkey.Length
+    [string[]]$key_lines = Get-Content -Path $private_key_file
+    Write-Host "==========Key file, lines count:"$key_lines.Count
+
+    Write-Host "Generated passphrase and private key files."
+
+    Write-Host "Importing private key file."
+    $import_key_args_list = "--batch --import `"$private_key_file`""
+    Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
+    Write-Host "Imported private key file."
+    Write-Host "Format 2 completed."
+}
+catch {
+    Write-Host "FAILED: format 2"
+}
+
+#format 3
+try {
+    Write-Host "Running Format 3......."
+    Write-Host "Generating passphrase and private key files."
+    $pwd_value = $(javapgppwd)
+    $key_value = $(javapgpkey)
+    Out-File -FilePath $passphrase_file -InputObject $pwd_value -NoNewline -Encoding ascii
+    Out-File -FilePath $private_key_file -InputObject $key_value -NoNewline -Encoding ascii
+
+    Write-Host "==========pwd.length: " + $pwd.Length
+    Write-Host "==========key.length: " + $key.Length
+    [string[]]$key_lines = Get-Content -Path $private_key_file
+    Write-Host "==========Key file, lines count:"$key_lines.Count
+
+    Write-Host "Generated passphrase and private key files."
+
+
+    Write-Host "Importing private key file."
+    $import_key_args_list = "--batch --import `"$private_key_file`""
+    Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
+    Write-Host "Imported private key file."
+    Write-Host "Format 3 completed."
+}
+catch {
+    Write-Host "FAILED: format 3"
 }
 
 Write-Host "GPG and sha256 signing to files completed."
