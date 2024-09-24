@@ -54,7 +54,18 @@ jobs:
         azureSubscription: 'OnnxrunTimeCodeSign_20240611'
         KeyVaultName: 'ort-release'
         SecretsFilter: 'java-pgp-pwd,java-pgp-key'
-        RunAsPreJob: false
+        RunAsPreJob: true
+
+    - script: |
+        #!/bin/bash
+        echo $(java-pgp-pwd) > passphrase.txt
+        echo $(java-pgp-key) > private_key.txt
+        readarray -t private_key_array < private_key.txt
+        readarray -t passphrase_array < passphrase.txt
+        echo "private key length: ${#private_key_array[@]}"
+        echo "passphrase length: ${#passphrase_array[@]}"
+      workingDirectory: $(Build.BinariesDirectory)
+      displayName: 'KYLE - Test key only'
 
     - script: |
         #!/bin/bash
