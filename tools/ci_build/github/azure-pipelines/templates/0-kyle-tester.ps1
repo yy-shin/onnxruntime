@@ -14,14 +14,16 @@ $private_key_file = Join-Path -Path $working_directory -ChildPath "private_key.t
 
 #format 1
 try {
+    Write-Host "Running Format 1......."
     Write-Host "Generating passphrase and private key files."
-    Out-File -FilePath $passphrase_file -InputObject "$(java-pgp-pwd)" -NoNewline -Encoding utf8
+    Out-File -FilePath $passphrase_file -InputObject $(javapgppwd) -NoNewline -Encoding utf8
     Write-Host "Generated passphrase and private key files."
 
     Write-Host "Importing private key file."
     $import_key_args_list = "--batch --import `"$private_key_file`""
     Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
     Write-Host "Imported private key file."
+    Write-Host "Format 1 completed."
 }
 catch {
     Write-Host "FAILED: format 1"
@@ -30,14 +32,16 @@ catch {
 
 #format 2
 try {
+    Write-Host "Running Format 2......."
     Write-Host "Generating passphrase and private key files."
-    Out-File -FilePath $passphrase_file -InputObject '$(java-pgp-pwd)' -NoNewline -Encoding utf8
+    Out-File -FilePath $passphrase_file -InputObject '$(javapgppwd)' -NoNewline -Encoding utf8
     Write-Host "Generated passphrase and private key files."
 
     Write-Host "Importing private key file."
     $import_key_args_list = "--batch --import `"$private_key_file`""
     Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
     Write-Host "Imported private key file."
+    Write-Host "Format 2 completed."
 }
 catch {
     Write-Host "FAILED: format 2"
@@ -45,14 +49,16 @@ catch {
 
 #format 3
 try {
+    Write-Host "Running Format 3......."
     Write-Host "Generating passphrase and private key files."
-    Out-File -FilePath $passphrase_file -InputObject `'$(java-pgp-pwd)`' -NoNewline -Encoding utf8
+    Out-File -FilePath $passphrase_file -InputObject `'$(javapgppwd)`' -NoNewline -Encoding utf8
     Write-Host "Generated passphrase and private key files."
 
     Write-Host "Importing private key file."
     $import_key_args_list = "--batch --import `"$private_key_file`""
     Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
     Write-Host "Imported private key file."
+    Write-Host "Format 3 completed."
 }
 catch {
     Write-Host "FAILED: format 3"
@@ -60,14 +66,16 @@ catch {
 
 #format 4
 try {
+    Write-Host "Running Format 4......."
     Write-Host "Generating passphrase and private key files."
-    Out-File -FilePath $passphrase_file -InputObject `"$(java-pgp-pwd)`" -NoNewline -Encoding utf8
+    Out-File -FilePath $passphrase_file -InputObject `"$(javapgppwd)`" -NoNewline -Encoding utf8
     Write-Host "Generated passphrase and private key files."
 
     Write-Host "Importing private key file."
     $import_key_args_list = "--batch --import `"$private_key_file`""
     Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
     Write-Host "Imported private key file."
+    Write-Host "Format 4 completed."
 }
 catch {
     Write-Host "FAILED: format 4"
