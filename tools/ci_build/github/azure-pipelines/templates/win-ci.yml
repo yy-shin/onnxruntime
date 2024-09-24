@@ -112,6 +112,18 @@ stages:
           RunAsPreJob: false
 
       - task: PowerShell@2
+        displayName: KYLE - inline length
+        inputs:
+          targetType: 'inline'
+          script: |
+            $pwd_value = '$(java-pgp-pwd)'
+            $key_value = '$(java-pgp-key)'
+
+            Write-Host "==========pwd.length: " + $pwd_value.Length
+            Write-Host "==========key.length: " + $key_value.Length
+          workingDirectory: '$(Build.BinariesDirectory)'
+
+      - task: PowerShell@2
         displayName: 'KYLE - Debugging PowerShell'
         inputs:
           filePath: '$(Build.SourcesDirectory)/tools/ci_build/github/azure-pipelines/templates/0-kyle-tester.ps1'
