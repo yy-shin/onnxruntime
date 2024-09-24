@@ -98,9 +98,9 @@ export const initializeWebAssemblyAndOrtRuntime = async (): Promise<void> => {
           proxyWorker.onmessage = onProxyWorkerMessage;
           initWasmCallbacks = [resolve, reject];
           const message: OrtWasmMessage = { type: 'init-wasm', in: env };
-          if (BUILD_DEFS.IS_ESM && !message.in!.wasm.wasmPaths && BUILD_DEFS.ESM_IMPORT_META_URL?.startsWith('file:')) {
-            // if `import.meta.url` is a file URL, it means it is overwriten by the bundler. in this case, unless the
-            // overrided wasm path is set, we need to use the bundler preferred URL format:
+          if (BUILD_DEFS.IS_ESM && BUILD_DEFS.DISABLE_DYNAMIC_IMPORT && !message.in!.wasm.wasmPaths) {
+            // if using ESM and dynamic import is disabled, unless the overrided wasm path is set, we need to use the
+            // bundler preferred URL format:
             // new URL('filename', import.meta.url)
             // so that the bundler can handle the file using corresponding loaders.
             message.in!.wasm.wasmPaths = {

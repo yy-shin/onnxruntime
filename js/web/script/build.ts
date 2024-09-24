@@ -123,9 +123,7 @@ async function minifyWasmModuleJsForBrowser(filepath: string): Promise<string> {
     // ```
     // with:
     // ```
-    // new Worker(import.meta.url.startsWith('file:')
-    //              ? new URL(BUILD_DEFS.BUNDLE_FILENAME, import.meta.url)
-    //              : new URL(import.meta.url), ...
+    // new Worker(new URL(BUILD_DEFS.BUNDLE_FILENAME, import.meta.url), ...
     // ```
     //
     // NOTE: this is a workaround for some bundlers that does not support runtime import.meta.url.
@@ -142,7 +140,7 @@ async function minifyWasmModuleJsForBrowser(filepath: string): Promise<string> {
     // Replace the only occurrence.
     contents = contents.replace(
       /new Worker\(new URL\(import\.meta\.url\),/,
-      `new Worker(import.meta.url.startsWith('file:')?new URL(BUILD_DEFS.BUNDLE_FILENAME, import.meta.url):new URL(import.meta.url),`,
+      `new Worker(new URL(BUILD_DEFS.BUNDLE_FILENAME, import.meta.url),`,
     );
 
     // Find the first and the only occurrence of minified function implementation of "_emscripten_thread_set_strongref":

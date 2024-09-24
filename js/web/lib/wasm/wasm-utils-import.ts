@@ -14,17 +14,15 @@ export const scriptSrc =
   isNode
     ? undefined
     : BUILD_DEFS.IS_ESM // if It's ESM, use import.meta.url
-      ? // For ESM, if the import.meta.url is a file URL, this usually means the bundler rewrites `import.meta.url` to
-        // the file path at compile time. In this case, this file path cannot be used to determine the runtime URL.
+      ? // Some bundlers rewrites `import.meta.url` to the file path at compile time. In this case, `import.meta.url`
+        // cannot be used to determine the runtime URL.
         //
         // We need to use the URL constructor like this:
         // ```js
         // new URL('actual-bundle-name.js', import.meta.url).href
         // ```
         // So that bundler can preprocess the URL correctly.
-        BUILD_DEFS.ESM_IMPORT_META_URL?.startsWith('file:')
-        ? new URL(BUILD_DEFS.BUNDLE_FILENAME, BUILD_DEFS.ESM_IMPORT_META_URL).href
-        : BUILD_DEFS.ESM_IMPORT_META_URL
+        new URL(BUILD_DEFS.BUNDLE_FILENAME, BUILD_DEFS.ESM_IMPORT_META_URL).href
       : typeof document !== 'undefined'
         ? (document.currentScript as HTMLScriptElement)?.src
         : // use `self.location.href` if available

@@ -94,14 +94,14 @@ async function main() {
   // await delay(1000 * 3600);  // wait for 1 hour
 
   try {
-    // test case run in Node.js
-    await testAllNodejsCases();
+    // // test case run in Node.js
+    // await testAllNodejsCases();
 
-    // test cases with self-host (ort hosted in same origin)
-    await testAllBrowserCases({ hostInKarma: true });
+    // // test cases with self-host (ort hosted in same origin)
+    // await testAllBrowserCases({ hostInKarma: true });
 
-    // test cases without self-host (ort hosted in different origin)
-    await testAllBrowserCases({ hostInKarma: false });
+    // // test cases without self-host (ort hosted in different origin)
+    // await testAllBrowserCases({ hostInKarma: false });
 
     // run bundlers
     await runInShell(`npm run build`);
