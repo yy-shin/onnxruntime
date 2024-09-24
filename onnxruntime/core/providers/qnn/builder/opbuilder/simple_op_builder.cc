@@ -101,9 +101,10 @@ Status SimpleOpBuilder::ProcessInputs(QnnModelWrapper& qnn_model_wrapper,
                                       const logging::Logger& logger,
                                       std::vector<std::string>& input_names,
                                       bool do_op_validation) const {
-  const std::string& op_type = node_unit.OpType();
+  // const std::string& op_type = node_unit.OpType();
   ORT_RETURN_IF_ERROR(BaseOpBuilder::ProcessInputs(qnn_model_wrapper, node_unit, logger, input_names, do_op_validation));
 
+  /*
   if (op_type == "MatMul") {
     const auto& inputs = node_unit.Inputs();
     TensorInfo input0_info = {};
@@ -134,6 +135,7 @@ Status SimpleOpBuilder::ProcessInputs(QnnModelWrapper& qnn_model_wrapper,
       input_names.push_back(convert_output_name);
     }
   }
+  */
 
   return Status::OK();
 }

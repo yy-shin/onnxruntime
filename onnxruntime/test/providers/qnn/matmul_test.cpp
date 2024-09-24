@@ -171,7 +171,8 @@ static void RunQDQMatMulOpOpTest(const TestInputDef<float>& input1_def,
                                  const TestInputDef<float>& input2_def,
                                  ExpectedEPNodeAssignment expected_ep_assignment,
                                  int opset = 18,
-                                 bool use_contrib_qdq = false) {
+                                 bool use_contrib_qdq = false,
+                                 logging::Severity log_severity = logging::Severity::kERROR) {
   ProviderOptions provider_options;
 #if defined(_WIN32)
   provider_options["backend_path"] = "QnnHtp.dll";
@@ -184,7 +185,9 @@ static void RunQDQMatMulOpOpTest(const TestInputDef<float>& input1_def,
                                                                                        use_contrib_qdq),
                        provider_options,
                        opset,
-                       expected_ep_assignment);
+                       expected_ep_assignment,
+                       QDQTolerance(),
+                       log_severity);
 }
 
 //
@@ -312,6 +315,60 @@ TEST_F(QnnHTPBackendTests, DISABLED_MatMulOp_HTP_A16_W16Dynamic) {
                                                      ExpectedEPNodeAssignment::All,
                                                      18,
                                                      true);  // Use com.microsoft Q/DQ ops
+}
+
+// QNN Validation bug for MatMul with two uint16 fixed-point inputs. Verbose logs:
+//
+// Qnn_OpConfig node name: node_token_15 package_name: qti.aisw QNN_op_type: MatMul num_of_inputs: 2 num_of_outputs: 1 num_of_params: 2
+// node_inputs:
+// name=node id=0 version=1 type=QNN_TENSOR_TYPE_NATIVE dataFormat=0 dataType=QNN_DATATYPE_UFIXED_POINT_16 rank=4 dimensions=(1 1 2 3 ) memType=QNN_TENSORMEMTYPE_RAW quantizeParams: encodingDefinition=QNN_DEFINITION_DEFINED quantizationEncoding=QNN_QUANTIZATION_ENCODING_SCALE_OFFSET scale=0.00228885 offset=0
+// name=node_token_6 id=0 version=1 type=QNN_TENSOR_TYPE_NATIVE dataFormat=0 dataType=QNN_DATATYPE_UFIXED_POINT_16 rank=4 dimensions=(1 1 3 2 ) memType=QNN_TENSORMEMTYPE_RAW quantizeParams: encodingDefinition=QNN_DEFINITION_DEFINED quantizationEncoding=QNN_QUANTIZATION_ENCODING_SCALE_OFFSET scale=0.00228885 offset=0
+// node_outputs:
+// name=node_token_16 id=0 version=1 type=QNN_TENSOR_TYPE_NATIVE dataFormat=0 dataType=QNN_DATATYPE_UFIXED_POINT_16 rank=4 dimensions=(1 1 2 2 ) memType=QNN_TENSORMEMTYPE_RAW quantizeParams: encodingDefinition=QNN_DEFINITION_DEFINED quantizationEncoding=QNN_QUANTIZATION_ENCODING_SCALE_OFFSET scale=0.764477 offset=0
+// node_params:
+// type=QNN_PARAMTYPE_SCALAR name=transpose_in0 value=0
+// type=QNN_PARAMTYPE_SCALAR name=transpose_in1 value=0
+//
+// QnnDsp <I> QnnBackend_validateOpConfig started, backend = 0x1
+// QnnDsp <V> RouterWindows tryLoadPrepare
+// QnnDsp <V> RouterWindows setting OpPackageManager HexagonUnloadOpPackage function pointer to 00007FF921221210
+// QnnDsp <V> RouterWindows set op validator soc model
+// QnnDsp <V> Set opvalidator socModel 60
+// QnnDsp <V> RouterWindows validateOpConfig
+// QnnDsp <V> key found in multimap: qti.aisw    => 00007FF9221F0370
+// QnnDsp <V> Validating Native Op node_token_15:qti.aisw:MatMul
+// Validating Op Config node_token_15.
+// Validating Op Type MatMul == MatMul.
+// Validating Inputs.
+// Validating Input[0] of ID 0.
+// Validating Input[1] of ID 0.
+// Validating Params.
+// Validating Param[0]: transpose_in0.
+// Validating Outputs.
+// Validating Output[0] of ID 0.
+// QnnDsp <V> Validating Op Config node_token_15.
+// QnnDsp <V> check for mandatory input
+// QnnDsp <V> check for mandatory output
+// QnnDsp <V> Validating Op node_token_15 with precision INT16
+// QnnDsp <V> check non-mandatory input
+// QnnDsp <V> check non-mandatory output
+// QnnDsp <V> Checking input and output constraints for MatMul with input datayptes = [[<QnnDatatype.QNN_DATATYPE_UFIXED_POINT_16: 16>], [<QnnDatatype.QNN_DATATYPE_UFIXED_POINT_16: 16>], [<QnnDatatype.QNN_DATATYPE_UFIXED_POINT_8: 15>]] and output datayptes = [[<QnnDatatype.QNN_DATATYPE_UFIXED_POINT_16: 16>]]
+// QnnDsp <W> [4294967295] has incorrect Value 0, expected equal to -32768.
+// QnnDsp <V> validateNativeOps node_token_15:qti.aisw:MatMul htp op validator failed 3110
+// QnnDsp <V> registered validator failed => 3110
+// QnnDsp <E> QnnBackend_validateOpConfig failed 3110
+// QnnDsp <V> Wake up free backend (id: 1)'s thread(s)
+// QnnDsp <E> Failed to validate op node_token_15 with error 0xc26
+// QNN.backendValidateOpConfig() failed for node `node_token_15` of type `MatMul` with error code 3110
+TEST_F(QnnHTPBackendTests, MatMulOp_HTP_A16_W16Dynamic_ValidationBug) {
+  std::vector<float> input0_data = {90.0f, 100.0f, 110.0f, 120.0f, 130.0f, 150.0f};
+  std::vector<float> input1_data = {90.0f, 100.0f, 110.0f, 120.0f, 130.0f, 150.0f};
+  RunQDQMatMulOpOpTest<uint16_t, uint16_t, uint16_t>(TestInputDef<float>({1, 1, 2, 3}, false, input0_data),
+                                                     TestInputDef<float>({1, 1, 3, 2}, false, input1_data),
+                                                     ExpectedEPNodeAssignment::All,
+                                                     21,
+                                                     false,  // Use default onnx domain
+                                                     logging::Severity::kVERBOSE);
 }
 
 // Test QDQ MatMul with uint16 activation uint16 weights, both dynamic
