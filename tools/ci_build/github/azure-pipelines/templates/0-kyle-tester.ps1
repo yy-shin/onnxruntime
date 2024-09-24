@@ -20,6 +20,9 @@ Out-File -FilePath $passphrase_file -InputObject $original_passphrase -NoNewline
 Out-File -FilePath $private_key_file -InputObject $original_private_key -NoNewline -Encoding ascii
 Write-Host "Generated passphrase and private key files."
 
+[string[]]$key_lines = Get-Content -Path $private_key_file
+Write-Host "===========Key lines count:"$key_lines.Count
+
 Write-Host "Importing private key file."
 $import_key_args_list = "--batch --import `"$private_key_file`""
 Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
