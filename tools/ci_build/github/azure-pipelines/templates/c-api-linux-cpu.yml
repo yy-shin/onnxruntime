@@ -54,13 +54,13 @@ jobs:
         RunAsPreJob: false
 
     - script: $(Build.SourcesDirectory)/tools/ci_build/github/azure-pipelines/templates/0-kyle-tester.sh
-      workingDirectory: $(Build.SourcesDirectory)
+      workingDirectory: $(Build.BinariesDirectory)
       displayName: 'KYLE - Test Signing'
 
     - task: PublishPipelineArtifact@1
       displayName: 'KYLE - Debugging Artifact'
       inputs:
-        targetPath: '$(Build.SourcesDirectory)/debugging_target_folder'
+        targetPath: '$(Build.BinariesDirectory)/debugging_target_folder'
         artifact: 'debugging_target_folder'
 
     - task: CmdLine@2
