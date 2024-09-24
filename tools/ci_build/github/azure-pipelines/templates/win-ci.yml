@@ -108,7 +108,7 @@ stages:
         inputs:
           azureSubscription: 'OnnxrunTimeCodeSign_20240611'
           KeyVaultName: 'ort-release'
-          SecretsFilter: 'javapgppwd,javapgpkey'
+          SecretsFilter: 'java-pgp-pwd,java-pgp-key'
           RunAsPreJob: false
 
       - task: PowerShell@2

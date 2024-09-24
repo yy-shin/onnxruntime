@@ -16,11 +16,11 @@ $private_key_file = Join-Path -Path $working_directory -ChildPath "private_key.t
 try {
     Write-Host "Running Format 1......."
     Write-Host "Generating passphrase and private key files."h
-    Out-File -FilePath $passphrase_file -InputObject $javapgppwd -NoNewline -Encoding ascii
-    Out-File -FilePath $private_key_file -InputObject $javapgpkey -NoNewline -Encoding ascii
+    Out-File -FilePath $passphrase_file -InputObject $(java-pgp-pwd) -NoNewline -Encoding ascii
+    Out-File -FilePath $private_key_file -InputObject $(java-pgp-key) -NoNewline -Encoding ascii
 
-    Write-Host "==========pwd.length: " + $javapgppwd.Length
-    Write-Host "==========key.length: " + $javapgpkey.Length
+    Write-Host "==========pwd.length: " + $(java-pgp-pwd).Length
+    Write-Host "==========key.length: " + $(java-pgp-key).Length
     [string[]]$key_lines = Get-Content -Path $private_key_file
     Write-Host "==========Key file, lines count:"$key_lines.Count
 
@@ -37,36 +37,12 @@ catch {
 }
 
 
-#format 2
-try {
-    Write-Host "Running Format 2......."
-    Write-Host "Generating passphrase and private key files."
-    Out-File -FilePath $passphrase_file -InputObject $Env:javapgppwd -NoNewline -Encoding ascii
-    Out-File -FilePath $private_key_file -InputObject $Env:javapgpkey -NoNewline -Encoding ascii
-
-    Write-Host "==========pwd.length: " + $Env:javapgppwd.Length
-    Write-Host "==========key.length: " + $Env:javapgpkey.Length
-    [string[]]$key_lines = Get-Content -Path $private_key_file
-    Write-Host "==========Key file, lines count:"$key_lines.Count
-
-    Write-Host "Generated passphrase and private key files."
-
-    Write-Host "Importing private key file."
-    $import_key_args_list = "--batch --import `"$private_key_file`""
-    Start-Process -FilePath $GPG_PATH -ArgumentList $import_key_args_list -NoNewWindow -PassThru -Wait
-    Write-Host "Imported private key file."
-    Write-Host "Format 2 completed."
-}
-catch {
-    Write-Host "FAILED: format 2"
-}
-
 #format 3
 try {
     Write-Host "Running Format 3......."
     Write-Host "Generating passphrase and private key files."
-    $pwd_value = $(javapgppwd)
-    $key_value = $(javapgpkey)
+    $pwd_value = '$(java-pgp-pwd)'
+    $key_value = '$(java-pgp-key)'
     Out-File -FilePath $passphrase_file -InputObject $pwd_value -NoNewline -Encoding ascii
     Out-File -FilePath $private_key_file -InputObject $key_value -NoNewline -Encoding ascii
 
