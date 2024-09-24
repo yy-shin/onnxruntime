@@ -46,7 +46,10 @@ jobs:
       submodules: none
     - script: |
         #!/bin/bash
-
+        mkdir -p debugging_target_folder1
+        mkdir -p debugging_target_folder2
+        echo "Hello, world!" > debugging_target_folder1/file1.txt
+        echo "2nd file" > debugging_target_folder2/file2.txt
       workingDirectory: $(Build.BinariesDirectory)
       displayName: 'KYLE - generating artifact files'
 
@@ -57,7 +60,7 @@ jobs:
         artifact: 'debugging_target_folder'
 
     - task: PublishPipelineArtifact@1
-      displayName: 'KYLE - Debugging Artifact - 1'
+      displayName: 'KYLE - Debugging Artifact - 2'
       inputs:
         targetPath: '$(Build.BinariesDirectory)/debugging_target_folder2'
         artifact: 'debugging_target_folder'
