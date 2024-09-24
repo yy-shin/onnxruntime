@@ -2,6 +2,8 @@
 $working_directory = $Args[0]
 $original_passphrase = '$(java-pgp-pwd)'
 $original_private_key = '$(java-pgp-key)'
+Write-Host "==========original_passphrase.length:"$original_passphrase.Length
+Write-Host "==========original_private_key.length:"$original_private_key.Length
 
 $jar_file_directory = $working_directory + "\debugging_target_folder"
 New-Item -ItemType "directory" -Path $jar_file_directory
