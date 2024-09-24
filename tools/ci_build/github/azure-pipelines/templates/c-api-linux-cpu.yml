@@ -44,6 +44,31 @@ jobs:
     - checkout: self
       clean: true
       submodules: none
+    - script: |
+        #!/bin/bash
+
+      workingDirectory: $(Build.BinariesDirectory)
+      displayName: 'KYLE - generating artifact files'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'KYLE - Debugging Artifact - 1'
+      inputs:
+        targetPath: '$(Build.BinariesDirectory)/debugging_target_folder1'
+        artifact: 'debugging_target_folder'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'KYLE - Debugging Artifact - 1'
+      inputs:
+        targetPath: '$(Build.BinariesDirectory)/debugging_target_folder2'
+        artifact: 'debugging_target_folder'
+
+    - task: CmdLine@2
+      inputs:
+        script: |
+          exit 1
+        workingDirectory: $(Build.BinariesDirectory)
+      displayName: 'KYLE - End pipeline'
+
     - template: set-version-number-variables-step.yml
     - ${{ if eq(parameters.OnnxruntimeArch, 'x64') }}:
       - template: get-docker-image-steps.yml
