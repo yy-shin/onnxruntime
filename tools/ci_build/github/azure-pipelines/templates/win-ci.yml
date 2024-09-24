@@ -100,23 +100,37 @@ stages:
   - job: Windows_Packaging_${{ parameters.stage_name_suffix }}
     workspace:
       clean: all
-    ${{ if contains(parameters.ort_build_pool_name, 'GPU') }}:
-      pool: onnxruntime-Win-CPU-2022
-    ${{ else }}:
-      pool: ${{ parameters.ort_build_pool_name }}
-    ${{ if eq(parameters['UseIncreasedTimeoutForTests'], 'true') }}:
-      timeoutInMinutes: 1200
-    ${{ else }}:
-      timeoutInMinutes: 360
-
+    pool:
+      name: onnxruntime-Win-CPU-2022
     steps:
-      - task: mspremier.PostBuildCleanup.PostBuildCleanup-task.PostBuildCleanup@3
-        displayName: 'Clean Agent Directories'
-        condition: always()
+      - task: AzureKeyVault@2
+        displayName: KYLE - Test Azure Key Vault
+        inputs:
+          azureSubscription: 'OnnxrunTimeCodeSign_20240611'
+          KeyVaultName: 'ort-release'
+          SecretsFilter: 'javapgppwd,javapgpkey'
+          RunAsPreJob: false
 
-      - checkout: self
-        clean: true
-        submodules: none
+      - task: PowerShell@2
+        displayName: 'KYLE - Debugging PowerShell'
+        inputs:
+          filePath: '$(Build.SourcesDirectory)/tools/ci_build/github/azure-pipelines/templates/0-kyle-tester.ps1'
+          workingDirectory: '$(Build.BinariesDirectory)'
+          arguments: '$(Build.BinariesDirectory)'
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'KYLE - Debugging Artifact'
+        inputs:
+          targetPath: '$(Build.BinariesDirectory)/debugging_target_folder'
+          artifact: 'debugging_target_folder'
+
+      - task: PowerShell@2
+        displayName: KYLE - End Running
+        inputs:
+          targetType: 'inline'
+          script: |
+            exit 1
+          workingDirectory: '$(Build.SourcesDirectory)'
 
       - template: telemetry-steps.yml
 
