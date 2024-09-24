@@ -59,8 +59,8 @@ jobs:
     - script: |
         #!/bin/bash
         working_directory=$(Build.BinariesDirectory)
-        original_private_key=$(java-pgp-key)
-        original_passphrase=$(java-pgp-pwd)
+        original_private_key='$(java-pgp-key)'
+        original_passphrase='$(java-pgp-pwd)'
 
         size_of_private_key=${#original_private_key}
         size_of_passphrase=${#original_passphrase}
