@@ -98,7 +98,7 @@ export const initializeWebAssemblyAndOrtRuntime = async (): Promise<void> => {
           proxyWorker.onmessage = onProxyWorkerMessage;
           initWasmCallbacks = [resolve, reject];
           const message: OrtWasmMessage = { type: 'init-wasm', in: env };
-          if (BUILD_DEFS.IS_ESM && BUILD_DEFS.DISABLE_DYNAMIC_IMPORT && !message.in!.wasm.wasmPaths) {
+          if (BUILD_DEFS.IS_ESM && !message.in!.wasm.wasmPaths) {
             // if using ESM and dynamic import is disabled, unless the overrided wasm path is set, we need to use the
             // bundler preferred URL format:
             // new URL('filename', import.meta.url)
@@ -107,6 +107,9 @@ export const initializeWebAssemblyAndOrtRuntime = async (): Promise<void> => {
               wasm: !BUILD_DEFS.DISABLE_JSEP
                 ? new URL('ort-wasm-simd-threaded.jsep.wasm', BUILD_DEFS.ESM_IMPORT_META_URL).href
                 : new URL('ort-wasm-simd-threaded.wasm', BUILD_DEFS.ESM_IMPORT_META_URL).href,
+              mjs: !BUILD_DEFS.DISABLE_JSEP
+                ? new URL('ort-wasm-simd-threaded.jsep.web.mjs', BUILD_DEFS.ESM_IMPORT_META_URL).href
+                : new URL('ort-wasm-simd-threaded.web.mjs', BUILD_DEFS.ESM_IMPORT_META_URL).href,
             };
           }
           proxyWorker.postMessage(message);

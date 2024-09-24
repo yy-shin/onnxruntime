@@ -55,7 +55,7 @@ export const initializeFlags = (): void => {
     }
   }
 
-  if (!BUILD_DEFS.DISABLE_DYNAMIC_IMPORT) {
+  if (!BUILD_DEFS.IS_ESM) {
     // overwrite wasm paths override if not set
     if (env.wasm.wasmPaths === undefined && scriptSrc && scriptSrc.indexOf('blob:') !== 0) {
       env.wasm.wasmPaths = scriptSrc.substring(0, scriptSrc.lastIndexOf('/') + 1);

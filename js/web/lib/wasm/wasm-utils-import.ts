@@ -43,6 +43,9 @@ const origin = isNode || typeof location === 'undefined' ? undefined : location.
 const isSameOrigin = (filename: string, prefixOverride?: string) => {
   try {
     const baseUrl = prefixOverride ?? scriptSrc;
+    if (filename === baseUrl) {
+      return true;
+    }
     const url = baseUrl ? new URL(filename, baseUrl) : new URL(filename);
     return url.origin === origin;
   } catch {
@@ -124,7 +127,7 @@ export const importProxyWorker = async (): Promise<[undefined | string, Worker]>
   }
 
   // If the script source is from the same origin, we can use the embedded proxy module directly.
-  if (BUILD_DEFS.DISABLE_DYNAMIC_IMPORT || isSameOrigin(scriptSrc)) {
+  if (isSameOrigin(scriptSrc)) {
     return [undefined, createProxyWorker!()];
   }
 
@@ -138,21 +141,20 @@ export const importProxyWorker = async (): Promise<[undefined | string, Worker]>
  *
  * This is only available in ESM and when embedding is not disabled.
  */
-const embeddedWasmModule: EmscriptenModuleFactory<OrtWasmModule> | undefined =
-  BUILD_DEFS.IS_ESM && BUILD_DEFS.DISABLE_DYNAMIC_IMPORT
-    ? // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-      require(
-        !BUILD_DEFS.DISABLE_JSEP
-          ? '../../dist/ort-wasm-simd-threaded.jsep.mjs'
-          : '../../dist/ort-wasm-simd-threaded.mjs',
-      ).default
-    : undefined;
+const embeddedWasmModule: EmscriptenModuleFactory<OrtWasmModule> | undefined = BUILD_DEFS.IS_ESM
+  ? // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    require(
+      !BUILD_DEFS.DISABLE_JSEP
+        ? '../../dist/ort-wasm-simd-threaded.jsep.web.mjs'
+        : '../../dist/ort-wasm-simd-threaded.web.mjs',
+    ).default
+  : undefined;
 
 /**
  * Import the WebAssembly module.
  *
  * This function will perform the following steps:
- * 1. If BUILD_DEFS.DISABLE_DYNAMIC_IMPORT is true, use the embedded module.
+ * 1. If nothing is overrided, use the embedded module.
  * 2. If a preload is needed, it will preload the module and return the object URL.
  * 3. Otherwise, it will perform a dynamic import of the module.
  *
@@ -165,7 +167,7 @@ export const importWasmModule = async (
   prefixOverride: string | undefined,
   isMultiThreaded: boolean,
 ): Promise<[undefined | string, EmscriptenModuleFactory<OrtWasmModule>]> => {
-  if (BUILD_DEFS.DISABLE_DYNAMIC_IMPORT) {
+  if (!urlOverride && !prefixOverride) {
     return [undefined, embeddedWasmModule!];
   } else {
     const wasmModuleFilename = !BUILD_DEFS.DISABLE_JSEP

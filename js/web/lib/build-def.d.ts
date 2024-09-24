@@ -28,10 +28,6 @@ interface BuildDefinitions {
    * defines whether to disable proxy feature in WebAssembly backend in the build.
    */
   readonly DISABLE_WASM_PROXY: boolean;
-  /**
-   * defines whether to disable dynamic importing WASM module in the build.
-   */
-  readonly DISABLE_DYNAMIC_IMPORT: boolean;
 
   // #endregion
 

@@ -56,7 +56,6 @@ const DEFAULT_DEFINE = {
   'BUILD_DEFS.DISABLE_JSEP': 'false',
   'BUILD_DEFS.DISABLE_WASM': 'false',
   'BUILD_DEFS.DISABLE_WASM_PROXY': 'false',
-  'BUILD_DEFS.DISABLE_DYNAMIC_IMPORT': 'false',
 
   'BUILD_DEFS.IS_ESM': 'false',
   'BUILD_DEFS.ESM_IMPORT_META_URL': 'undefined',
@@ -75,8 +74,6 @@ interface OrtBuildOptions {
   readonly outputName: string;
   readonly define?: Record<string, string>;
 }
-
-const terserAlreadyBuilt = new Map();
 
 /**
  * This function is only used to minify the Emscripten generated JS code. The ESBuild minify option is not able to
@@ -105,12 +102,7 @@ const terserAlreadyBuilt = new Map();
  *
  * We assume the minimized code does not contain any dynamic import calls.
  */
-async function minifyWasmModuleJsForBrowser(filepath: string): Promise<string> {
-  const code = terserAlreadyBuilt.get(filepath);
-  if (code) {
-    return code;
-  }
-
+async function minifyWasmModuleJsForBrowser(filepath: string, fileToWrite: string): Promise<void> {
   const doMinify = (async () => {
     const TIME_TAG = `BUILD:terserMinify:${filepath}`;
     console.time(TIME_TAG);
@@ -123,7 +115,9 @@ async function minifyWasmModuleJsForBrowser(filepath: string): Promise<string> {
     // ```
     // with:
     // ```
-    // new Worker(new URL(BUILD_DEFS.BUNDLE_FILENAME, import.meta.url), ...
+    // new Worker(import.meta.url.startsWith('file:')
+    //              ? new URL('ort-***.mjs', import.meta.url)
+    //              : new URL(import.meta.url), ...
     // ```
     //
     // NOTE: this is a workaround for some bundlers that does not support runtime import.meta.url.
@@ -140,7 +134,7 @@ async function minifyWasmModuleJsForBrowser(filepath: string): Promise<string> {
     // Replace the only occurrence.
     contents = contents.replace(
       /new Worker\(new URL\(import\.meta\.url\),/,
-      `new Worker(new URL(BUILD_DEFS.BUNDLE_FILENAME, import.meta.url),`,
+      `new Worker(import.meta.url.startsWith('file:')?new URL(${JSON.stringify(path.basename(fileToWrite))},import.meta.url):new URL(import.meta.url),`,
     );
 
     // Find the first and the only occurrence of minified function implementation of "_emscripten_thread_set_strongref":
@@ -196,8 +190,7 @@ async function minifyWasmModuleJsForBrowser(filepath: string): Promise<string> {
     return result.code!;
   })();
 
-  terserAlreadyBuilt.set(filepath, doMinify);
-  return doMinify;
+  await fs.writeFile(fileToWrite, await doMinify);
 }
 
 const esbuildAlreadyBuilt = new Map<string, string>();
@@ -301,17 +294,6 @@ async function buildOrt({
     defineOverride['globalThis.process'] = 'undefined';
   }
 
-  if (define['BUILD_DEFS.DISABLE_DYNAMIC_IMPORT'] === 'true') {
-    plugins.push({
-      name: 'emscripten-mjs-handler',
-      setup(build: esbuild.PluginBuild) {
-        build.onLoad({ filter: /dist[\\/]ort-.*wasm.*\.mjs$/ }, async (args) => ({
-          contents: await minifyWasmModuleJsForBrowser(args.path),
-        }));
-      },
-    });
-  }
-
   await buildBundle({
     entryPoints: ['web/lib/index.ts'],
     outfile: `web/dist/${bundleFilename}`,
@@ -359,6 +341,17 @@ async function buildTest() {
     ],
     minify: isProduction,
   });
+}
+
+async function preProcess() {
+  await minifyWasmModuleJsForBrowser(
+    path.join(SOURCE_ROOT_FOLDER, 'web/dist/ort-wasm-simd-threaded.mjs'),
+    path.join(SOURCE_ROOT_FOLDER, 'web/dist/ort-wasm-simd-threaded.web.mjs'),
+  );
+  await minifyWasmModuleJsForBrowser(
+    path.join(SOURCE_ROOT_FOLDER, 'web/dist/ort-wasm-simd-threaded.jsep.mjs'),
+    path.join(SOURCE_ROOT_FOLDER, 'web/dist/ort-wasm-simd-threaded.jsep.web.mjs'),
+  );
 }
 
 /**
@@ -529,7 +522,7 @@ async function main() {
   console.timeLog('BUILD', 'Start building ort-web bundles...');
 
   /**
-   * add all 6 build tasks for web bundles. Includes:
+   * add all 4 build tasks for web bundles. Includes:
    * - IIFE/CJS, debug:                [name].js
    * - IIFE/CJS, production:           [name].min.js
    * - ESM, debug:                     [name].mjs
@@ -562,6 +555,11 @@ async function main() {
       isProduction: true,
     });
   };
+
+  if (BUNDLE_MODE === 'prod') {
+    console.timeLog('BUILD', 'Start pre-processing...');
+    await preProcess();
+  }
 
   if (BUNDLE_MODE === 'node' || BUNDLE_MODE === 'prod') {
     // ort.node.min.js
@@ -609,25 +607,11 @@ async function main() {
   if (BUNDLE_MODE === 'prod') {
     // ort.all[.min].[m]js
     await addAllWebBuildTasks({ outputName: 'ort.all' });
-    // ort.all.bundle.min.mjs
-    await buildOrt({
-      isProduction: true,
-      outputName: 'ort.all.bundle',
-      format: 'esm',
-      define: { ...DEFAULT_DEFINE, 'BUILD_DEFS.DISABLE_DYNAMIC_IMPORT': 'true' },
-    });
 
     // ort[.min].[m]js
     await addAllWebBuildTasks({
       outputName: 'ort',
       define: { ...DEFAULT_DEFINE, 'BUILD_DEFS.DISABLE_JSEP': 'true' },
-    });
-    // ort.bundle.min.mjs
-    await buildOrt({
-      isProduction: true,
-      outputName: 'ort.bundle',
-      format: 'esm',
-      define: { ...DEFAULT_DEFINE, 'BUILD_DEFS.DISABLE_JSEP': 'true', 'BUILD_DEFS.DISABLE_DYNAMIC_IMPORT': 'true' },
     });
 
     // ort.webgpu[.min].[m]js
@@ -635,30 +619,11 @@ async function main() {
       outputName: 'ort.webgpu',
       define: { ...DEFAULT_DEFINE, 'BUILD_DEFS.DISABLE_WEBGL': 'true' },
     });
-    // ort.webgpu.bundle.min.mjs
-    await buildOrt({
-      isProduction: true,
-      outputName: 'ort.webgpu.bundle',
-      format: 'esm',
-      define: { ...DEFAULT_DEFINE, 'BUILD_DEFS.DISABLE_WEBGL': 'true', 'BUILD_DEFS.DISABLE_DYNAMIC_IMPORT': 'true' },
-    });
 
     // ort.wasm[.min].[m]js
     await addAllWebBuildTasks({
       outputName: 'ort.wasm',
       define: { ...DEFAULT_DEFINE, 'BUILD_DEFS.DISABLE_JSEP': 'true', 'BUILD_DEFS.DISABLE_WEBGL': 'true' },
-    });
-    // ort.wasm.bundle.min.mjs
-    await buildOrt({
-      isProduction: true,
-      outputName: 'ort.wasm.bundle',
-      format: 'esm',
-      define: {
-        ...DEFAULT_DEFINE,
-        'BUILD_DEFS.DISABLE_JSEP': 'true',
-        'BUILD_DEFS.DISABLE_WEBGL': 'true',
-        'BUILD_DEFS.DISABLE_DYNAMIC_IMPORT': 'true',
-      },
     });
 
     // ort.webgl[.min].[m]js
