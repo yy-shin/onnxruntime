@@ -108,7 +108,7 @@ stages:
         useXcpretty: false  # xcpretty can hide useful error output so we will disable it
       displayName: 'Build App Center iPhone arm64 tests'
 
-      - script: |
+    - script: |
         set -e -x
         echo "$(find . -iname "*.ipa")"
         echo "==================================================================="
